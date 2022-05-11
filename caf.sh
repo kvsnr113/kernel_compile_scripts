@@ -20,7 +20,7 @@ git fetch https://git.codelinaro.org/clo/la/kernel/msm-4.14 $TAG
 git merge --signoff FETCH_HEAD                                                                                                                                                                                                                                                                               
 }
 
-[[ $1 == "initial ]] && {
+[[ $1 == "initial" ]] && {
 git remote add qcacld-3.0 https://git.codelinaro.org/clo/la/platform/vendor/qcom-opensource/wlan/qcacld-3.0
 git fetch qcacld-3.0 $TAG
 git merge -s ours --no-commit --allow-unrelated-histories FETCH_HEAD
