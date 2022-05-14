@@ -59,7 +59,7 @@ make -j$(nproc --all) O=out ARCH=arm64 CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm 
 
 kernel="out/arch/arm64/boot/Image.gz"
 dtbo="out/arch/arm64/boot/dtbo.img"
-dtb="out/arch/arm64/boot/dtb.img
+dtb="out/arch/arm64/boot/dtb.img"
 
 if [ -f "$kernel" ] && [ -f "$dtbo" ] && [ -f "$dtb" ]; then
 	echo -e "\nKernel compiled succesfully! Zipping up...\n"
