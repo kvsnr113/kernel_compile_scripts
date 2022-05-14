@@ -55,14 +55,15 @@ mkdir -p out
 make O=out ARCH=arm64 $DEFCONFIG
 
 echo -e "\nStarting compilation...\n"
-make -j$(nproc --all) O=out ARCH=arm64 CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- Image.gz-dtb dtbo.img
+make -j$(nproc --all) O=out ARCH=arm64 CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- Image.gz dtbo.img dtb.img
 
-kernel="out/arch/arm64/boot/Image.gz-dtb"
+kernel="out/arch/arm64/boot/Image.gz"
 dtbo="out/arch/arm64/boot/dtbo.img"
+dtb="out/arch/arm64/boot/dtb.img
 
-if [ -f "$kernel" ] && [ -f "$dtbo" ]; then
+if [ -f "$kernel" ] && [ -f "$dtbo" ] && [ -f "$dtb" ]; then
 	echo -e "\nKernel compiled succesfully! Zipping up...\n"
-	cp $kernel $dtbo AnyKernel3
+	cp $kernel $dtbo $dtb AnyKernel3
 	cd AnyKernel3 || exit
 	zip -r9 "../$ZIPNAME" * -x .git README.md *placeholder
 	cd ..
