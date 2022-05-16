@@ -17,6 +17,8 @@ export TOKEN=5382711200:AAFp0g3MrphAUgylIq8ynMAbfeOys8lzWTI
 export COMPILER=ProtonClang
 export COMPILER_LINK=https://github.com/kdrag0n/proton-clang
 
+sudo apt install cpio
+
 curl -s -X POST https://api.telegram.org/bot"${TOKEN}"/sendMessage \
 		-d parse_mode="Markdown" \
 		-d chat_id="$CHATID" \
@@ -35,6 +37,14 @@ curl -s -X POST https://api.telegram.org/bot"${TOKEN}"/sendMessage \
 if ! [ -d "$TC_DIR" ]; then
 	echo "$COMPILER not found! Cloning to $TC_DIR..."
 	if ! git clone -q --depth=1 --single-branch "$COMPILER_LINK" "$TC_DIR"; then
+		echo "Cloning failed! Aborting..."
+		exit 1
+	fi
+fi
+
+if ! [ -d "AnyKernel3" ]; then
+	echo "AnyKernel3 not found! Cloning to AnyKernel3..."
+	if ! git clone -q --depth=1 --single-branch "https://github.com/$KBUILD_BUILD_USER/AnyKernel3"; then
 		echo "Cloning failed! Aborting..."
 		exit 1
 	fi
