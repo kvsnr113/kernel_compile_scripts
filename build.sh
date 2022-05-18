@@ -40,39 +40,33 @@ send_file(){
 make O=out ARCH=arm64 $DEFCONFIG
 
 [[ $@ = *"-r"* || $@ = *"--regen"* ]] && {
-	cp out/.config arch/arm64/configs/$DEFCONFIG
-	exit
+        cp out/.config arch/arm64/configs/$DEFCONFIG
+        exit
 }
 
 [[ ! -d "$TC_DIR" ]] && {
-	echo "$COMPILER not found! Cloning to $TC_DIR..."
-	if ! git clone -q --depth=1 --single-branch "$COMPILER_LINK" "$TC_DIR"; then
-		echo "Cloning failed! Aborting..."
-		exit 1
-	fi
+        echo "$COMPILER not found! Cloning to $TC_DIR..."
+        if ! git clone -q --depth=1 --single-branch "$COMPILER_LINK" "$TC_DIR"; then
+                echo "Cloning failed! Aborting..."
+                exit 1
+        fi
 }
 
 [[ ! -d "AnyKernel3" ]] && {
-	echo "AnyKernel3 not found! Cloning to AnyKernel3..."
-	if ! git clone -q --depth=1 --single-branch "https://github.com/$KBUILD_BUILD_USER/AnyKernel3"; then
-		echo "Cloning failed! Aborting..."
-		exit 1
-	fi
+        echo "AnyKernel3 not found! Cloning to AnyKernel3..."
+        if ! git clone -q --depth=1 --single-branch "https://github.com/$KBUILD_BUILD_USER/AnyKernel3"; then
+                echo "Cloning failed! Aborting..."
+                exit 1
+        fi
 }
 
 send_msg "
 <b>Build Triggered !</b>
-
 <b>==================================</b>
-
 <b>Device :</b> <code>$DEVICE</code>
-
 <b>Compiler :</b> <code>$COMPILER</code>
-
 <b>Branch :</b> <code>$BRANCH</code>
-
 <b>Last Commit :</b> <code>$LAST_COMMIT</code>
-
 <b>==================================</b>"
  
 make -j$(nproc --all) O=out ARCH=arm64 CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- Image.gz dtbo.img dtb.img
@@ -82,12 +76,13 @@ DTBO="out/arch/arm64/boot/dtbo.img"
 DTB="out/arch/arm64/boot/dtb.img"
 
 if [ -f "$KERNEL" ] && [ -f "$DTBO" ] && [ -f "$DTB" ]; then
-	cp $KERNEL $DTBO $DTB AnyKernel3
-	cd AnyKernel3 || exit
-	zip -r9 "../$ZIPNAME" * -x .git README.md *placeholder
-	cd ..
-	send_file "$ZIPNAME" "<b>Build Success -</b><code>$DEVICE</code>"
-	send_file "log.txt" "<b>Build Log</b>"
+        cp $KERNEL $DTBO $DTB AnyKernel3
+        cd AnyKernel3 || exit
+        zip -r9 "../$ZIPNAME" * -x .git README.md *placeholder
+        cd ..
+        send_file "$ZIPNAME" "Build Success"
 else
-	send_file "log.txt" "<b>Build Failed -</b><code>$DEVICE</code>"
+        send_msg "Build Failed"
 fi
+
+send_file "log.txt" "Build Log"
