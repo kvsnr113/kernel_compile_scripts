@@ -26,11 +26,13 @@ send_msg(){
 }
 
 send_file(){
-    curl -F document=@$1 https://api.telegram.org/bot"${TOKEN}"/sendDocument \
+    curl -s -X POST \
+        https://api.telegram.org/bot"$TOKEN"/sendDocument \
         -F chat_id="$CHATID" \
-        -F "disable_web_page_preview=true" \
-        -F "parse_mode=html" \
+        -F document=@"$1" \
         -F caption="$2" \
+        -F "parse_mode=html" \
+        -F "disable_web_page_preview=true"
 }
 
 [[ $@ = *"-c"* || $@ = *"--clean"* ]] && rm -rf out
@@ -51,7 +53,7 @@ make O=out ARCH=arm64 $DEFCONFIG
 }
 
 [[ ! -d "AnyKernel3" ]] && {
-	echo "AnyKernel3 not found! Cloning to ../AnyKernel3..."
+	echo "AnyKernel3 not found! Cloning to AnyKernel3..."
 	if ! git clone -q --depth=1 --single-branch "https://github.com/$KBUILD_BUILD_USER/AnyKernel3"; then
 		echo "Cloning failed! Aborting..."
 		exit 1
@@ -84,8 +86,8 @@ if [ -f "$KERNEL" ] && [ -f "$DTBO" ] && [ -f "$DTB" ]; then
 	cd AnyKernel3 || exit
 	zip -r9 "$ZIPNAME" * -x .git README.md *placeholder
 	cd ..
-	send_file "@$ZIPNAME" "<b>Build Success -</b><code>$DEVICE</code>"
-	send_file "@compile_log.txt" "<b>Build Log</b>"
+	send_file "$ZIPNAME" "<b>Build Success -</b><code>$DEVICE</code>"
+	send_file "log.txt" "<b>Build Log</b>"
 else
-	send_file "@compile_log.txt" "<b>Build Failed -</b><code>$DEVICE</code>"
+	send_file "log.txt" "<b>Build Failed -</b><code>$DEVICE</code>"
 fi
