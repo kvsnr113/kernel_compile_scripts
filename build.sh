@@ -26,13 +26,11 @@ send_msg(){
 }
 
 send_file(){
-    curl -s -X POST \
-        https://api.telegram.org/bot"$TOKEN"/sendDocument \
+    curl -F document=@$1 https://api.telegram.org/bot"${TOKEN}"/sendDocument \
         -F chat_id="$CHATID" \
-        -F document=@"$1" \
-        -F caption="$2" \
+        -F "disable_web_page_preview=true" \
         -F "parse_mode=html" \
-        -F "disable_web_page_preview=true"
+        -F caption="$2" \
 }
 
 [[ $@ = *"-c"* || $@ = *"--clean"* ]] && rm -rf out
