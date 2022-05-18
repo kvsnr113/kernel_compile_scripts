@@ -86,7 +86,7 @@ if [ -f "$KERNEL" ] && [ -f "$DTBO" ] && [ -f "$DTB" ]; then
 	cd ../AnyKernel3 || exit
 	zip -r9 "../$ZIPNAME" * -x .git README.md *placeholder
 	cd ..
-	send_file "@$ZIPNAME" "<b>Build Success -</b><code>$DEVICE</code>"
+	send_file "@../$ZIPNAME" "<b>Build Success -</b><code>$DEVICE</code>"
 	send_file "@compile_log.txt" "<b>Build Log</b>"
 else
 	send_file "@compile_log.txt" "<b>Build Failed -</b><code>$DEVICE</code>"
