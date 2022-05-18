@@ -14,8 +14,8 @@ export KBUILD_BUILD_HOST=Project113
 export CHATID=-1001586260532
 export TOKEN=5382711200:AAFp0g3MrphAUgylIq8ynMAbfeOys8lzWTI
 
-export COMPILER=ProtonClang
-export COMPILER_LINK=https://github.com/kdrag0n/proton-clang
+export COMPILER=AzureClang
+export COMPILER_LINK=https://gitlab.com/Panchajanya1999/azure-clang
 
 sudo apt install cpio
 
