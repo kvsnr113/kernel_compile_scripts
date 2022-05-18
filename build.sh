@@ -60,17 +60,21 @@ make O=out ARCH=arm64 $DEFCONFIG
 	fi
 }
 
-send_msg "<b>Build Triggered !</b>" \
-	 "<b>==================================</b>" \
-	 "<b>Device :</b>" \
-	 "<code>$DEVICE</code>" \
-	 "<b>Compiler :</b>" \
-	 "<code>$COMPILER</code>" \
-	 "<b>Branch :</b>" \
-	 "<code>$BRANCH</code>" \
-	 "<b>Last Commit :</b>" \
-	 "<code>$LAST_COMMIT</code>" \
-	 "<b>==================================</b>" 
+send_msg "
+<b>Build Triggered !</b>
+
+<b>==================================</b>
+
+<b>Device :</b> <code>$DEVICE</code>
+
+<b>Compiler :</b> <code>$COMPILER</code>
+
+<b>Branch :</b> <code>$BRANCH</code>
+
+<b>Last Commit :</b> <code>$LAST_COMMIT</code>
+
+<b>==================================</b>"
+ 
 
 make -j$(nproc --all) O=out ARCH=arm64 CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- Image.gz dtbo.img dtb.img | tee out/compile_log.txt
 
