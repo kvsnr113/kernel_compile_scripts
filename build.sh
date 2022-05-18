@@ -1,6 +1,7 @@
-############################### BUILDER SCRIPT ###############################
+export COMPILER=AzureClang
+export COMPILER_LINK=https://gitlab.com/Panchajanya1999/azure-clang
 
-export TC_DIR="$HOME/tc/compiler"
+export TC_DIR="$HOME/tc/$COMPILER"
 export PATH="$TC_DIR/bin:$PATH"
 
 export DEVICE="Poco X3 Pro"
@@ -13,9 +14,6 @@ export KBUILD_BUILD_HOST=Project113
 
 export CHATID=-1001586260532
 export TOKEN=5382711200:AAFp0g3MrphAUgylIq8ynMAbfeOys8lzWTI
-
-export COMPILER=AzureClang
-export COMPILER_LINK=https://gitlab.com/Panchajanya1999/azure-clang
 
 sudo apt install cpio
 
@@ -34,50 +32,43 @@ curl -s -X POST https://api.telegram.org/bot"${TOKEN}"/sendMessage \
 		-d chat_id="$CHATID" \
 		-d text="$GITLOG"
 
-if ! [ -d "$TC_DIR" ]; then
+[[ $@ = *"-c"* || $@ = *"--clean"* ]] && rm -rf out
+
+[[ ! -d "$TC_DIR" ]] && {
 	echo "$COMPILER not found! Cloning to $TC_DIR..."
 	if ! git clone -q --depth=1 --single-branch "$COMPILER_LINK" "$TC_DIR"; then
 		echo "Cloning failed! Aborting..."
 		exit 1
 	fi
-fi
+}
 
-if ! [ -d "AnyKernel3" ]; then
+[[ ! -d "AnyKernel3" ]] && {
 	echo "AnyKernel3 not found! Cloning to AnyKernel3..."
 	if ! git clone -q --depth=1 --single-branch "https://github.com/$KBUILD_BUILD_USER/AnyKernel3"; then
 		echo "Cloning failed! Aborting..."
 		exit 1
 	fi
-fi
+}
 
-
-if [[ $1 = "-r" || $1 = "--regen" ]]; then
-	make O=out ARCH=arm64 $DEFCONFIG
-	cp out/.config arch/arm64/configs/$DEFCONFIG
-	exit
-fi
-
-if [[ $1 = "-c" || $1 = "--clean" ]]; then
-	rm -rf out
-fi
-
-mkdir -p out
 make O=out ARCH=arm64 $DEFCONFIG
 
-echo -e "\nStarting compilation...\n"
+[[ $@ = *"-r"* || $@ = *"--regen"* ]] && {
+	cp out/.config arch/arm64/configs/$DEFCONFIG
+	exit
+}
+
 make -j$(nproc --all) O=out ARCH=arm64 CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- Image.gz dtbo.img dtb.img
 
-kernel="out/arch/arm64/boot/Image.gz"
-dtbo="out/arch/arm64/boot/dtbo.img"
-dtb="out/arch/arm64/boot/dtb.img"
+KERNEL="out/arch/arm64/boot/Image.gz"
+DTBO="out/arch/arm64/boot/dtbo.img"
+DTB="out/arch/arm64/boot/dtb.img"
 
 if [ -f "$kernel" ] && [ -f "$dtbo" ] && [ -f "$dtb" ]; then
 	echo -e "\nKernel compiled succesfully! Zipping up...\n"
-	cp $kernel $dtbo $dtb AnyKernel3
+	cp $KERNEL $DTBO $DTB AnyKernel3
 	cd AnyKernel3 || exit
 	zip -r9 "../$ZIPNAME" * -x .git README.md *placeholder
 	cd ..
-	echo -e "\nCompleted !"
 	curl -F document=@$ZIPNAME https://api.telegram.org/bot"${TOKEN}"/sendDocument \
         -F chat_id="$CHATID" \
         -F "disable_web_page_preview=true" \
@@ -85,11 +76,8 @@ if [ -f "$kernel" ] && [ -f "$dtbo" ] && [ -f "$dtb" ]; then
         -F caption="Build Success - $DEVICE"
 	echo
 else
-	echo -e "\nCompilation failed!"
 	curl -s -X POST https://api.telegram.org/bot"${TOKEN}"/sendMessage \
 		-d parse_mode="Markdown" \
 		-d chat_id="$CHATID" \
 		-d text="Build Failed - $DEVICE"
 fi
-
-##############################################################################
