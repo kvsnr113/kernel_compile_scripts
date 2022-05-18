@@ -84,7 +84,7 @@ DTB="out/arch/arm64/boot/dtb.img"
 if [ -f "$KERNEL" ] && [ -f "$DTBO" ] && [ -f "$DTB" ]; then
 	cp $KERNEL $DTBO $DTB AnyKernel3
 	cd AnyKernel3 || exit
-	zip -r9 "$ZIPNAME" * -x .git README.md *placeholder
+	zip -r9 "../$ZIPNAME" * -x .git README.md *placeholder
 	cd ..
 	send_file "$ZIPNAME" "<b>Build Success -</b><code>$DEVICE</code>"
 	send_file "log.txt" "<b>Build Log</b>"
