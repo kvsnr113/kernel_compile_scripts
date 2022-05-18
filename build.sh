@@ -52,9 +52,9 @@ make O=out ARCH=arm64 $DEFCONFIG
 	fi
 }
 
-[[ ! -d "../AnyKernel3" ]] && {
+[[ ! -d "AnyKernel3" ]] && {
 	echo "AnyKernel3 not found! Cloning to ../AnyKernel3..."
-	if ! git clone -q --depth=1 --single-branch "https://github.com/$KBUILD_BUILD_USER/AnyKernel3" ../AnyKernel3; then
+	if ! git clone -q --depth=1 --single-branch "https://github.com/$KBUILD_BUILD_USER/AnyKernel3"; then
 		echo "Cloning failed! Aborting..."
 		exit 1
 	fi
@@ -82,11 +82,11 @@ DTBO="out/arch/arm64/boot/dtbo.img"
 DTB="out/arch/arm64/boot/dtb.img"
 
 if [ -f "$KERNEL" ] && [ -f "$DTBO" ] && [ -f "$DTB" ]; then
-	cp $KERNEL $DTBO $DTB ../AnyKernel3
-	cd ../AnyKernel3 || exit
-	zip -r9 "../$ZIPNAME" * -x .git README.md *placeholder
+	cp $KERNEL $DTBO $DTB AnyKernel3
+	cd AnyKernel3 || exit
+	zip -r9 "$ZIPNAME" * -x .git README.md *placeholder
 	cd ..
-	send_file "@../$ZIPNAME" "<b>Build Success -</b><code>$DEVICE</code>"
+	send_file "@$ZIPNAME" "<b>Build Success -</b><code>$DEVICE</code>"
 	send_file "@compile_log.txt" "<b>Build Log</b>"
 else
 	send_file "@compile_log.txt" "<b>Build Failed -</b><code>$DEVICE</code>"
