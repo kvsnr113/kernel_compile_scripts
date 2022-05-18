@@ -75,8 +75,7 @@ send_msg "
 
 <b>==================================</b>"
  
-
-make -j$(nproc --all) O=out ARCH=arm64 CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- Image.gz dtbo.img dtb.img | tee out/compile_log.txt
+make -j$(nproc --all) O=out ARCH=arm64 CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- Image.gz dtbo.img dtb.img
 
 KERNEL="out/arch/arm64/boot/Image.gz"
 DTBO="out/arch/arm64/boot/dtbo.img"
@@ -88,6 +87,7 @@ if [ -f "$KERNEL" ] && [ -f "$DTBO" ] && [ -f "$DTB" ]; then
 	zip -r9 "../$ZIPNAME" * -x .git README.md *placeholder
 	cd ..
 	send_file "@$ZIPNAME" "<b>Build Success -</b><code>$DEVICE</code>"
+	send_file "@compile_log.txt" "<b>Build Log</b>"
 else
-	send_file "@out/compile_log.txt" "<b>Build Failed -</b><code>$DEVICE</code>"
+	send_file "@compile_log.txt" "<b>Build Failed -</b><code>$DEVICE</code>"
 fi
