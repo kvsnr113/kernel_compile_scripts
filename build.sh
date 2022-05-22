@@ -91,4 +91,4 @@ send_file(){
         exit
 }
 
-build_kernel | tee log.txt
+build_kernel 2>&1 | tee log.txt
