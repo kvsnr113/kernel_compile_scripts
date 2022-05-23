@@ -39,16 +39,6 @@ build_kernel(){
                 fi
         }
 
-        send_msg "<b>Build Triggered !</b>" \
-                 "<b>Builder :</b>" \
-                 "<b>CPU</b> <code>$CORES Core @ $CLOCKSPEED</code>" \
-                 "<b>RAM</b> <code>Total $MEMTOTAL Mb - Free $MEMFREE Mb </code>" \
-                 "<b>==================================</b>" \
-                 "<b>Compiler :</b> <code>$COMPILER</code>" \
-                 "<b>Branch :</b> <code>$BRANCH</code>" \
-                 "<b>Last Commit :</b> <code>$LAST_COMMIT</code> " \
-                 "<b>==================================</b>" 
-
         make O=out ARCH=arm64 $DEFCONFIG
         make -j"$CORES" \
             O=out \
@@ -111,5 +101,16 @@ send_file(){
         cp out/.config arch/arm64/configs/$DEFCONFIG
         exit
 }
+
+send_msg "
+<b>Build Triggered !</b>
+<b>Builder :</b>
+<b>CPU</b> <code>$CORES Core @ $CLOCKSPEED</code>
+<b>RAM</b> <code>Total $MEMTOTAL Mb - Free $MEMFREE Mb </code>
+<b>==================================</b>
+<b>Compiler :</b> <code>$COMPILER</code>
+<b>Branch :</b> <code>$BRANCH</code>
+<b>Last Commit :</b> <code>$LAST_COMMIT</code>
+<b>==================================</b>" 
 
 build_kernel 2>&1 | tee log.txt
