@@ -14,6 +14,8 @@ export KBUILD_BUILD_USER="kvsnr113"
 export KBUILD_BUILD_HOST="Project113"
 export CORES="$(grep -c ^processor /proc/cpuinfo)"
 export CLOCKSPEED="$(lscpu | grep 'max' | sed 's/ //g' | awk -F ':' '{print $2}')"
+export MEMTOTAL="$(awk '/MemTotal/ {printf( "%d\n", $2 / 1024 )}' /proc/meminfo)
+export MEMFREE="$(awk '/MemFree/ {printf( "%d\n", $2 / 1024 )}' /proc/meminfo)
 
 export CHATID="-1001586260532"
 export TOKEN="5382711200:AAFp0g3MrphAUgylIq8ynMAbfeOys8lzWTI"
@@ -38,7 +40,9 @@ build_kernel(){
         }
 
         send_msg "<b>Build Triggered !</b>" \
-                 "<b>Builder :</b><code> $CORES Core @ $CLOCKSPEED</code>" \
+                 "<b>Builder :</b>" \
+                 "<b>CPU</b> <code>$CORES Core @ $CLOCKSPEED</code>" \
+                 "<b>RAM</b> <code>Total $MEMTOTAL Mb - Free $MEMFREE Mb </code>" \
                  "<b>==================================</b>" \
                  "<b>Compiler :</b> <code>$COMPILER</code>" \
                  "<b>Branch :</b> <code>$BRANCH</code>" \
