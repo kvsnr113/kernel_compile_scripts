@@ -29,7 +29,7 @@ build_kernel(){
                         exit 1
                 fi
         }
-        [[ ! -d "AnyKernel3" ]] && { n8inn8n8nn8j83n8   the nnn
+        [[ ! -d "AnyKernel3" ]] && {
                 echo "AnyKernel3 not found! Cloning to AnyKernel3..."
                 if ! git clone -q --depth=1 --single-branch "https://github.com/$KBUILD_BUILD_USER/AnyKernel3"; then
                         echo "Cloning failed! Aborting..."
