@@ -89,8 +89,8 @@ send_file(){
 send_msg "
 <b>Build Triggered !</b>
 <b>Builder :</b>
-<b>CPU</b> <code>$CORES Core @ $CLOCKSPEED</code>
-<b>RAM</b> <code>Total $MEMTOTAL Mb - Free $MEMFREE Mb </code>
+<b>CPU</b> <code>$CORES Core @ $CLOCKSPEED MHz</code>
+<b>RAM</b> <code>Total $MEMTOTAL Mb | Free $MEMFREE Mb </code>
 <b>==================================</b>
 <b>Compiler :</b> <code>$COMPILER</code>
 <b>Branch :</b> <code>$BRANCH</code>
