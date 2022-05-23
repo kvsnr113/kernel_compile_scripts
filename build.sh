@@ -37,15 +37,13 @@ build_kernel(){
                 fi
         }
 
-        send_msg "
-        <b>Build Triggered !</b>
-        <b>Builder :</b><code> $CORES Core @ $CLOCKSPEED</code>
-        <b>==================================</b>
-        <b>Device :</b> <code>$DEVICE</code>
-        <b>Compiler :</b> <code>$COMPILER</code>
-        <b>Branch :</b> <code>$BRANCH</code>
-        <b>Last Commit :</b> <code>$LAST_COMMIT</code>
-        <b>==================================</b>"
+        send_msg "<b>Build Triggered !</b>" \
+                 "<b>Builder :</b><code> $CORES Core @ $CLOCKSPEED</code>" \
+                 "<b>==================================</b>" \
+                 "<b>Compiler :</b> <code>$COMPILER</code>" \
+                 "<b>Branch :</b> <code>$BRANCH</code>" \
+                 "<b>Last Commit :</b> <code>$LAST_COMMIT</code> " \
+                 "<b>==================================</b>" 
 
         make O=out ARCH=arm64 $DEFCONFIG
         make -j"$CORES" \
