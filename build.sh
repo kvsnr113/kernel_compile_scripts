@@ -12,6 +12,8 @@ export LAST_COMMIT="$(git log --pretty=format:'"%h : %s"' -1)"
 export BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 export KBUILD_BUILD_USER="kvsnr113"
 export KBUILD_BUILD_HOST="Project113"
+export CORES="$(grep -c ^processor /proc/cpuinfo)"
+export CPU="$(lscpu | sed -nr '/Model name/ s/.*:\s*(.*) */\1/p')"
 
 export CHATID="-1001586260532"
 export TOKEN="5382711200:AAFp0g3MrphAUgylIq8ynMAbfeOys8lzWTI"
@@ -27,7 +29,7 @@ build_kernel(){
                         exit 1
                 fi
         }
-        [[ ! -d "AnyKernel3" ]] && {
+        [[ ! -d "AnyKernel3" ]] && { n8inn8n8nn8j83n8   the nnn
                 echo "AnyKernel3 not found! Cloning to AnyKernel3..."
                 if ! git clone -q --depth=1 --single-branch "https://github.com/$KBUILD_BUILD_USER/AnyKernel3"; then
                         echo "Cloning failed! Aborting..."
@@ -37,6 +39,7 @@ build_kernel(){
 
         send_msg "
         <b>Build Triggered !</b>
+        <b>Builder :</b><code> $CPU $CORES Thread</code>
         <b>==================================</b>
         <b>Device :</b> <code>$DEVICE</code>
         <b>Compiler :</b> <code>$COMPILER</code>
@@ -45,7 +48,23 @@ build_kernel(){
         <b>==================================</b>"
 
         make O=out ARCH=arm64 $DEFCONFIG
-        make -j$(nproc --all) O=out ARCH=arm64 CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- Image.gz dtbo.img dtb.img
+        make -j"$CORES" \
+            O=out \
+            ARCH=arm64 \
+            CC=clang \
+            LD=ld.lld \
+            AR=llvm-ar \
+            NM=llvm-nm \
+            AS=llvm-as \
+            STRIP=llvm-strip \
+            OBJCOPY=llvm-objcopy \
+            OBJDUMP=llvm-objdump \
+            OBJSIZE=llvm-size \
+            READELF=llvm-readelf \
+            CLANG_TRIPLE=aarch64-linux-gnu- \
+            CROSS_COMPILE=aarch64-linux-gnu- \
+            CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+            Image.gz dtbo.img dtb.img
 
         KERNEL="out/arch/arm64/boot/Image.gz"
         DTBO="out/arch/arm64/boot/dtbo.img"
