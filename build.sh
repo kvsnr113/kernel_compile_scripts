@@ -1,7 +1,7 @@
 export COMPILER="AzureClang"
 export COMPILER_LINK="https://gitlab.com/Panchajanya1999/azure-clang"
 
-export TC_DIR="$HOME/tc/$COMPILER"
+export TC_DIR="$HOME/$COMPILER"
 export PATH="$TC_DIR/bin:$PATH"
 
 export DEVICE="Poco X3 Pro"
