@@ -21,9 +21,8 @@ export CHATID="-1001586260532"
 export TOKEN="5382711200:AAFp0g3MrphAUgylIq8ynMAbfeOys8lzWTI"
 
 build_kernel(){
-        rm log.txt
         rm -rf *.zip
-
+        rm -rf log.txt 
         [[ ! -d "$TC_DIR" ]] && {
                 echo "$COMPILER not found! Cloning to $TC_DIR..."
                 if ! git clone -q --depth=1 --single-branch "$COMPILER_LINK" "$TC_DIR"; then
@@ -102,6 +101,7 @@ send_file(){
         exit
 }
 
+[[ $@ = *"-b"* || $@ = *"--build"* ]] && {
 send_msg "
 <b>Build Triggered !</b>
 <b>Builder :</b>
@@ -112,5 +112,5 @@ send_msg "
 <b>Branch :</b> <code>$BRANCH</code>
 <b>Last Commit :</b> <code>$LAST_COMMIT</code>
 <b>==================================</b>" 
-
-build_kernel 2>&1 | tee log.txt
+build_kernel 2>&1 | tee out/log.txt
+}
