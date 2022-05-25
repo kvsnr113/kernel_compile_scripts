@@ -1,4 +1,4 @@
-export TC_DIR="$HOME/clang"
+export TC_DIR="../clang"
 export PATH="$TC_DIR/bin:$PATH"
 
 export DEVICE="Poco X3 Pro"
@@ -17,11 +17,11 @@ export CHATID="-1001586260532"
 export TOKEN="5382711200:AAFp0g3MrphAUgylIq8ynMAbfeOys8lzWTI"
 
 build_kernel(){
-        rm -rf *.zip
-        rm -rf log.txt
-        [[ ! -d "AnyKernel3" ]] && {
+        rm -rf ../log.txt
+        touch ../log.txt
+        [[ ! -d "../AnyKernel3" ]] && {
                 echo "AnyKernel3 not found! Cloning to AnyKernel3..."
-                if ! git clone -q --depth=1 --single-branch "https://github.com/$KBUILD_BUILD_USER/AnyKernel3"; then
+                if ! git clone -q --depth=1 --single-branch "https://github.com/$KBUILD_BUILD_USER/AnyKernel3" ../AnyKernel3; then
                         echo "Cloning failed! Aborting..."
                         exit 1
                 fi
@@ -51,9 +51,10 @@ build_kernel(){
         DTB="out/arch/arm64/boot/dts/qcom/sm8150-v2.dtb"
 
         if [ -f "$KERNEL" ] && [ -f "$DTBO" ] && [ -f "$DTB" ]; then
-                cp $KERNEL $DTBO $DTB AnyKernel3
-                mv AnyKernel3/sm8150-v2.dtb AnyKernel3/dtb
-                cd AnyKernel3 || exit
+                cp $KERNEL $DTBO $DTB ../AnyKernel3
+                mv ../AnyKernel3/sm8150-v2.dtb ../AnyKernel3/dtb
+                cd ..
+                cd AnyKernel3
                 zip -r9 "../$ZIPNAME" * -x .git README.md *placeholder
                 cd ..
                 send_file "$ZIPNAME" "Build Success"
@@ -101,5 +102,5 @@ send_msg "
 <b>Branch :</b> <code>$BRANCH</code>
 <b>Last Commit :</b> <code>$LAST_COMMIT</code>
 <b>==================================</b>"
-build_kernel 2>&1 | tee log.txt
+build_kernel 2>&1 | tee ../log.txt
 }
