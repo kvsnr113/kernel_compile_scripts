@@ -1,6 +1,3 @@
-export COMPILER="AzureClang"
-export COMPILER_LINK="https://gitlab.com/Panchajanya1999/azure-clang"
-
 export TC_DIR="$HOME/clang"
 export PATH="$TC_DIR/bin:$PATH"
 
@@ -12,8 +9,7 @@ export LAST_COMMIT="$(git log --pretty=format:'"%h : %s"' -1)"
 export BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 export KBUILD_BUILD_USER="kvsnr113"
 export KBUILD_BUILD_HOST="Project113"
-export CORES="$(grep -c ^processor /proc/cpuinfo)"
-export CLOCKSPEED="$(lscpu | grep 'max' | sed 's/ //g' | awk -F ':' '{print $2}')"
+export CPU="$(neofetch | grep 'CPU' | awk -F ':' '{print $2}')"
 export MEMTOTAL="$(awk '/MemTotal/ {printf( "%d\n", $2 / 1024 )}' /proc/meminfo)"
 export MEMFREE="$(awk '/MemFree/ {printf( "%d\n", $2 / 1024 )}' /proc/meminfo)"
 
@@ -22,14 +18,7 @@ export TOKEN="5382711200:AAFp0g3MrphAUgylIq8ynMAbfeOys8lzWTI"
 
 build_kernel(){
         rm -rf *.zip
-        rm -rf log.txt 
-        [[ ! -d "$TC_DIR" ]] && {
-                echo "$COMPILER not found! Cloning to $TC_DIR..."
-                if ! git clone -q --depth=1 --single-branch "$COMPILER_LINK" "$TC_DIR"; then
-                        echo "Cloning failed! Aborting..."
-                        exit 1
-                fi
-        }
+        rm -rf log.txt
         [[ ! -d "AnyKernel3" ]] && {
                 echo "AnyKernel3 not found! Cloning to AnyKernel3..."
                 if ! git clone -q --depth=1 --single-branch "https://github.com/$KBUILD_BUILD_USER/AnyKernel3"; then
@@ -39,7 +28,7 @@ build_kernel(){
         }
 
         make O=out ARCH=arm64 $DEFCONFIG
-        make -j"$CORES" \
+        make -j$(nproc --all) \
             O=out \
             ARCH=arm64 \
             CC=clang \
@@ -55,14 +44,15 @@ build_kernel(){
             CLANG_TRIPLE=aarch64-linux-gnu- \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-            Image.gz dtbo.img dtb.img
+            Image.gz dtbo.img
 
         KERNEL="out/arch/arm64/boot/Image.gz"
         DTBO="out/arch/arm64/boot/dtbo.img"
-        DTB="out/arch/arm64/boot/dtb.img"
+        DTB="out/arch/arm64/boot/dts/qcom/sm8150-v2.dtb"
 
         if [ -f "$KERNEL" ] && [ -f "$DTBO" ] && [ -f "$DTB" ]; then
                 cp $KERNEL $DTBO $DTB AnyKernel3
+                mv AnyKernel3/sm8150-v2.dtb AnyKernel3/dtb
                 cd AnyKernel3 || exit
                 zip -r9 "../$ZIPNAME" * -x .git README.md *placeholder
                 cd ..
@@ -105,12 +95,11 @@ send_file(){
 send_msg "
 <b>Build Triggered !</b>
 <b>Builder :</b>
-<b>CPU</b> <code>$CORES Core @ $CLOCKSPEED MHz</code>
+<b>CPU</b><code>$CPU</code>
 <b>RAM</b> <code>Total $MEMTOTAL Mb | Free $MEMFREE Mb </code>
 <b>==================================</b>
-<b>Compiler :</b> <code>$COMPILER</code>
 <b>Branch :</b> <code>$BRANCH</code>
 <b>Last Commit :</b> <code>$LAST_COMMIT</code>
-<b>==================================</b>" 
+<b>==================================</b>"
 build_kernel 2>&1 | tee log.txt
 }
