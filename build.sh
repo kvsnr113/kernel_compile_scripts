@@ -112,5 +112,5 @@ send_msg "
 <b>Branch :</b> <code>$BRANCH</code>
 <b>Last Commit :</b> <code>$LAST_COMMIT</code>
 <b>==================================</b>" 
-build_kernel 2>&1 | tee out/log.txt
+build_kernel 2>&1 | tee log.txt
 }
