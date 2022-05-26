@@ -40,10 +40,10 @@ build_kernel(){
                     CLANG_TRIPLE=aarch64-linux-gnu- \
                     CROSS_COMPILE=aarch64-linux-gnu- \
                     CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-                    Image.gz dtbo.img
+                    Image.gz dtbo.img dtb.img
         }
         [[ "$@" == *"clang-llvm"* ]] && {
-                export TC_DIR="HOME/clang-llvm"
+                export TC_DIR="$HOME/clang-llvm"
                 export PATH="$TC_DIR/bin:$PATH"
                 export PREFIXDIR="$TC_DIR/bin/"
                 make -j$(nproc --all) \
@@ -61,19 +61,19 @@ build_kernel(){
                     HOSTCC=clang \
                     HOSTCXX=clang++ \
                     HOSTAR=${PREFIXDIR}llvm-ar \
-	            HOSTLD=${PREFIXDIR}ld.lld \
+                    HOSTLD=${PREFIXDIR}ld.lld \
                     CLANG_TRIPLE=aarch64-linux-gnu- \
                     CROSS_COMPILE=aarch64-linux-gnu- \
                     CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
                     LLVM=1 \
-                    Image.gz dtbo.img
+                    Image.gz dtbo.img dtb.img
         }
         KERNEL="out/arch/arm64/boot/Image.gz"
         DTBO="out/arch/arm64/boot/dtbo.img"
-        DTB="out/arch/arm64/boot/dts/qcom/sm8150-v2.dtb"
+        DTB="out/arch/arm64/boot/dtb.img"
         if [ -f "$KERNEL" ] && [ -f "$DTBO" ] && [ -f "$DTB" ]; then
                 cp $KERNEL $DTBO $DTB ../AnyKernel3
-                mv ../AnyKernel3/sm8150-v2.dtb ../AnyKernel3/dtb
+                mv ../AnyKernel3/dtb.img ../AnyKernel3/dtb
                 zip -r9 "../$ZIPNAME" ../AnyKernel3/* -x .git README.md *placeholder
                 send_file "../$ZIPNAME" "Build Success"
         else
