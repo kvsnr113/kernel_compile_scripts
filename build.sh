@@ -1,6 +1,3 @@
-export TC_DIR="../clang"
-export PATH="$TC_DIR/bin:$PATH"
-
 export DEVICE="Poco X3 Pro"
 export ZIPNAME="R.Y.N-kernel-vayu-$(date '+%Y%m%d-%H%M').zip"
 export DEFCONFIG="vayu_defconfig"
@@ -9,7 +6,6 @@ export LAST_COMMIT="$(git log --pretty=format:'"%h : %s"' -1)"
 export BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 export KBUILD_BUILD_USER="kvsnr113"
 export KBUILD_BUILD_HOST="Project113"
-export CPU="$(neofetch | grep 'CPU' | awk -F ':' '{print $2}')"
 export MEMTOTAL="$(awk '/MemTotal/ {printf( "%d\n", $2 / 1024 )}' /proc/meminfo)"
 export MEMFREE="$(awk '/MemFree/ {printf( "%d\n", $2 / 1024 )}' /proc/meminfo)"
 
@@ -26,30 +22,57 @@ build_kernel(){
                         exit 1
                 fi
         }
-
         make O=out ARCH=arm64 $DEFCONFIG
-        make -j$(nproc --all) \
-            O=out \
-            ARCH=arm64 \
-            CC=clang \
-            LD=ld.lld \
-            AR=llvm-ar \
-            NM=llvm-nm \
-            AS=llvm-as \
-            STRIP=llvm-strip \
-            OBJCOPY=llvm-objcopy \
-            OBJDUMP=llvm-objdump \
-            OBJSIZE=llvm-size \
-            READELF=llvm-readelf \
-            CLANG_TRIPLE=aarch64-linux-gnu- \
-            CROSS_COMPILE=aarch64-linux-gnu- \
-            CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-            Image.gz dtbo.img
-
+        [[ "$@" == *"clang"* ]] && {
+                export TC_DIR="$HOME/clang"
+                export PATH="$TC_DIR/bin:$PATH"
+                make -j$(nproc --all) \
+                    O=out \
+                    ARCH=arm64 \
+                    CC=clang \
+                    LD=ld.lld \
+                    AR=llvm-ar \
+                    NM=llvm-nm \
+                    AS=llvm-as \
+                    STRIP=llvm-strip \
+                    OBJCOPY=llvm-objcopy \
+                    OBJDUMP=llvm-objdump \
+                    OBJSIZE=llvm-size \
+                    READELF=llvm-readelf \
+                    CLANG_TRIPLE=aarch64-linux-gnu- \
+                    CROSS_COMPILE=aarch64-linux-gnu- \
+                    CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+                    Image.gz dtbo.img
+        }
+        [[ "$@" == *"clang-llvm"* ]] && {
+                export TC_DIR="HOME/clang-llvm"
+                export PATH="$TC_DIR/bin:$PATH"
+                export PREFIXDIR="$TC_DIR/bin/"
+                make -j$(nproc --all) \
+                    O=out \
+                    CC=clang \
+                    LD=${PREFIXDIR}ld.lld \
+                    AR=${PREFIXDIR}llvm-ar \
+                    NM=${PREFIXDIR}llvm-nm \
+                    AS=${PREFIXDIR}llvm-as \
+                    STRIP=${PREFIXDIR}llvm-strip \
+                    OBJCOPY=${PREFIXDIR}llvm-objcopy \
+                    OBJDUMP=${PREFIXDIR}llvm-objdump \
+                    OBJSIZE=${PREFIXDIR}llvm-size \
+                    READELF=${PREFIXDIR}llvm-readelf \
+                    HOSTCC=clang \
+                    HOSTCXX=clang++ \
+                    HOSTAR=${PREFIXDIR}llvm-ar \
+	            HOSTLD=${PREFIXDIR}ld.lld \
+                    CLANG_TRIPLE=aarch64-linux-gnu- \
+                    CROSS_COMPILE=aarch64-linux-gnu- \
+                    CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+                    LLVM=1 \
+                    Image.gz dtbo.img
+        }
         KERNEL="out/arch/arm64/boot/Image.gz"
         DTBO="out/arch/arm64/boot/dtbo.img"
         DTB="out/arch/arm64/boot/dts/qcom/sm8150-v2.dtb"
-
         if [ -f "$KERNEL" ] && [ -f "$DTBO" ] && [ -f "$DTB" ]; then
                 cp $KERNEL $DTBO $DTB ../AnyKernel3
                 mv ../AnyKernel3/sm8150-v2.dtb ../AnyKernel3/dtb
@@ -61,7 +84,6 @@ build_kernel(){
         else
                 send_msg "Build Failed"
         fi
-
         send_file "log.txt" "Build Log"
 }
 
@@ -96,11 +118,13 @@ send_file(){
 send_msg "
 <b>Build Triggered !</b>
 <b>Builder :</b>
-<b>CPU</b><code>$CPU</code>
-<b>RAM</b> <code>Total $MEMTOTAL Mb | Free $MEMFREE Mb </code>
+<b>CPU</b> $(neofetch | grep 'CPU' | awk -F ':' '{print $2}')
+<b>RAM</b> Total $MEMTOTAL Mb | Free $MEMFREE Mb
 <b>==================================</b>
+<b>Compiler :</b> <code>$2</code>
 <b>Branch :</b> <code>$BRANCH</code>
 <b>Last Commit :</b> <code>$LAST_COMMIT</code>
 <b>==================================</b>"
-build_kernel 2>&1 | tee ../log.txt
+[[ "$2" == "clang" ]] && build_kernel "clang" 2>&1 | tee ../log.txt
+[[ "$2" == "clang-llvm ]] && build_kernel "clang-llvm" 2>&1 | tee ../log.txt
 }
