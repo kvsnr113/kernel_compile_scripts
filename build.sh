@@ -6,8 +6,6 @@ export LAST_COMMIT="$(git log --pretty=format:'"%h : %s"' -1)"
 export BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 export KBUILD_BUILD_USER="kvsnr113"
 export KBUILD_BUILD_HOST="Project113"
-export MEMTOTAL="$(awk '/MemTotal/ {printf( "%d\n", $2 / 1024 )}' /proc/meminfo)"
-export MEMFREE="$(awk '/MemFree/ {printf( "%d\n", $2 / 1024 )}' /proc/meminfo)"
 
 export CHATID="-1001586260532"
 export TOKEN="5382711200:AAFp0g3MrphAUgylIq8ynMAbfeOys8lzWTI"
@@ -19,9 +17,10 @@ build_kernel(){
                         echo "Cloning failed! Aborting..."
                         exit 1
                 fi
+
         }
         make O=out ARCH=arm64 $DEFCONFIG
-        [[ "$@" == *"clang"* ]] && {
+        [[ "$1" == "clang" ]] && {
                 export TC_DIR="$HOME/clang"
                 export PATH="$TC_DIR/bin:$PATH"
                 make -j$(nproc --all) \
@@ -42,7 +41,7 @@ build_kernel(){
                     CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
                     Image.gz dtbo.img dtb.img
         }
-        [[ "$@" == *"clang-llvm"* ]] && {
+        [[ "$1" == "clang-llvm" ]] && {
                 export TC_DIR="$HOME/clang-llvm"
                 export PATH="$TC_DIR/bin:$PATH"
                 export PREFIXDIR="$TC_DIR/bin/"
@@ -113,13 +112,15 @@ send_file(){
 send_msg "
 <b>Build Triggered !</b>
 <b>Builder :</b>
-<b>CPU</b> $(neofetch | grep 'CPU' | awk -F ':' '{print $2}')
-<b>RAM</b> Total $MEMTOTAL Mb | Free $MEMFREE Mb
+<b>CPU :</b> <code>$(neofetch | grep 'CPU' | awk -F ':' '{print $2}')</code>
+<b>RAM :</b> <code>Total $(cat /proc/meminfo | numfmt --field 2 --from-unit=Ki --to-unit=Mi | sed 's/ kB/M/g' | grep 'MemTotal' | awk -F ':' '{print $2}' | tr -d ' ') | Swap $(cat /proc/meminfo | numfmt --field 2 --from-unit=Ki --to-unit=Mi | sed 's/ kB/M/g' | grep 'SwapTotal' | awk -F ':' '{print $2}' | tr -d ' ')</code>
 <b>==================================</b>
 <b>Compiler :</b> <code>$2</code>
 <b>Branch :</b> <code>$BRANCH</code>
 <b>Last Commit :</b> <code>$LAST_COMMIT</code>
 <b>==================================</b>"
+[[ ! -d out ]] && mkdir out
+[[ ! -e out/log.txt ]] && touch out/log.txt
 [[ "$2" == "clang" ]] && build_kernel "clang" 2>&1 | tee out/log.txt
 [[ "$2" == "clang-llvm" ]] && build_kernel "clang-llvm" 2>&1 | tee out/log.txt
 }
