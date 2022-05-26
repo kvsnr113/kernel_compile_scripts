@@ -121,5 +121,5 @@ send_msg "
 <b>Last Commit :</b> <code>$LAST_COMMIT</code>
 <b>==================================</b>"
 [[ "$2" == "clang" ]] && build_kernel "clang" 2>&1 | tee out/log.txt
-[[ "$2" == "clang-llvm ]] && build_kernel "clang-llvm" 2>&1 | tee out/log.txt
+[[ "$2" == "clang-llvm" ]] && build_kernel "clang-llvm" 2>&1 | tee out/log.txt
 }
