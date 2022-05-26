@@ -13,8 +13,6 @@ export CHATID="-1001586260532"
 export TOKEN="5382711200:AAFp0g3MrphAUgylIq8ynMAbfeOys8lzWTI"
 
 build_kernel(){
-        rm -rf ../log.txt
-        touch ../log.txt
         [[ ! -d "../AnyKernel3" ]] && {
                 echo "AnyKernel3 not found! Cloning to AnyKernel3..."
                 if ! git clone -q --depth=1 --single-branch "https://github.com/$KBUILD_BUILD_USER/AnyKernel3" ../AnyKernel3; then
@@ -76,15 +74,12 @@ build_kernel(){
         if [ -f "$KERNEL" ] && [ -f "$DTBO" ] && [ -f "$DTB" ]; then
                 cp $KERNEL $DTBO $DTB ../AnyKernel3
                 mv ../AnyKernel3/sm8150-v2.dtb ../AnyKernel3/dtb
-                cd ..
-                cd AnyKernel3
-                zip -r9 "../$ZIPNAME" * -x .git README.md *placeholder
-                cd ..
-                send_file "$ZIPNAME" "Build Success"
+                zip -r9 "../$ZIPNAME" ../AnyKernel3/* -x .git README.md *placeholder
+                send_file "../$ZIPNAME" "Build Success"
         else
                 send_msg "Build Failed"
         fi
-        send_file "log.txt" "Build Log"
+        send_file "out/log.txt" "Build Log"
 }
 
 send_msg(){
@@ -125,6 +120,6 @@ send_msg "
 <b>Branch :</b> <code>$BRANCH</code>
 <b>Last Commit :</b> <code>$LAST_COMMIT</code>
 <b>==================================</b>"
-[[ "$2" == "clang" ]] && build_kernel "clang" 2>&1 | tee ../log.txt
-[[ "$2" == "clang-llvm ]] && build_kernel "clang-llvm" 2>&1 | tee ../log.txt
+[[ "$2" == "clang" ]] && build_kernel "clang" 2>&1 | tee out/log.txt
+[[ "$2" == "clang-llvm ]] && build_kernel "clang-llvm" 2>&1 | tee out/log.txt
 }
