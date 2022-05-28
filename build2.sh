@@ -1,99 +1,91 @@
 #!/usr/bin/env bash
-# Copyright ©2022 XSans02
+# Copyright ©2022 XSans02 - Modified by 113
 # Kernel Build Script
 
-# Function to show an informational message
-msg() {
+HOME="$PWD"
+BASE_DIR="../$PWD"
+export KBUILD_BUILD_USER="kvsnr113"
+export KBUILD_BUILD_HOST="projkt113"
+
+msg(){
     echo -e "\e[1;32m$*\e[0m"
 }
 
-panel() {
+panel(){
     echo -e "\e[1;34m$*\e[0m"
 }
 
-panel2() {
+panel2(){
     echo -ne "\e[1;34m$*\e[0m"
 }
 
-err() {
+err(){
     echo -e "\e[1;31m$*\e[0m"
 }
 
-# Home directory
-HOME=$(pwd)
-
-# Checking
 msg "* Checking..."
 sleep 1
-if [[ "$GIT_TOKEN" ]]; then
+[[ "$GIT_TOKEN" ]] && {
     msg "(OK) Git Token"
-else
+} || {
     err "(X) GIT_TOKEN Not Found"
     exit
-fi
+}
 sleep 1
-if [[ "$TELEGRAM_TOKEN" ]]; then
+[[ "$TELEGRAM_TOKEN" ]] && {
     msg "(OK) Telegram Token"
-else
+} ||
     err "(X) TELEGRAM_TOKEN Not Found"
     exit
-fi
+}
 sleep 1
-if [[ "$CHANNEL_ID" ]]; then
+[[ "$CHANNEL_ID" ]] && {
     msg "(OK) Channel ID"
-else
+} || 
     err "(X) CHANNEL_ID Not Found"
     exit
-fi
+}
 sleep 1
-
-# Remove old files
-msg ""
-msg "* Remove old files..."
-msg ""
-rm -rf kernel
-rm -rf AK3
 
 # Clone Toolchain Source
 if [[ "$1" == "weebx" ]]; then
     msg "* Use WeebX Clang..."
-    rm -rf clang arm64 arm32
     wget  $(curl https://github.com/XSans02/WeebX-Clang/raw/main/WeebX-Clang-link.txt 2>/dev/null) -O "WeebX-Clang.tar.gz"
-    mkdir clang && tar -xf WeebX-Clang.tar.gz -C clang && rm -rf WeebX-Clang.tar.gz
+    mkdir $BASE_DIR/"$1"-clang && tar -xf WeebX-Clang.tar.gz -C $BASE_DIR/"$1"-clang && rm -rf WeebX-Clang.tar.gz
 elif [[ "$1" == "azure" ]]; then
     msg "* Use Azure Clang..."
-    rm -rf clang arm64 arm32
-    git clone --depth=1 https://gitlab.com/Panchajanya1999/azure-clang clang
-elif [[ "$1" == "sdclang" ]]; then
+    git clone --depth=1 https://gitlab.com/Panchajanya1999/azure-clang $BASE_DIR/"$1"-clang
+elif [[ "$1" == "sd" ]]; then
     msg "* Use SDClang..."
-    rm -rf clang arm64 arm32
-    git clone --depth=1 https://github.com/ZyCromerZ/SDClang clang
-    git clone --depth=1 https://github.com/XSans02/arm-linux-androideabi-4.9 arm32
-    git clone --depth=1 https://github.com/XSans02/aarch64-linux-android-4.9 arm64
+    git clone --depth=1 https://github.com/ZyCromerZ/SDClang $BASE_DIR/"$1"-clang
 elif [[ "$1" == "aosp" ]]; then
     msg "* Use AOSP Clang..."
-    rm -rf clang arm64 arm32
     CVER="r450784e"
     wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-"$CVER".tar.gz
-    mkdir clang && tar -xf clang-"$CVER".tar.gz -C clang && rm -rf clang-"$CVER".tar.gz
-    git clone --depth=1 https://github.com/XSans02/arm-linux-androideabi-4.9 arm32
-    git clone --depth=1 https://github.com/XSans02/aarch64-linux-android-4.9 arm64
+    mkdir $BASE_DIR/"$1"-clang && tar -xf clang-"$CVER".tar.gz -C $BASE_DIR/"$1"-clang && rm -rf clang-"$CVER".tar.gz
 fi
 
-# Clone Source
-msg ""
-msg "* Clone Kernel/AK3 Source..."
-git clone --depth=1 -b master https://"$GIT_TOKEN":x-oauth-basic@github.com/XSans02/kernel_xiaomi_vayu kernel
-git clone --depth=1 -b vayu https://github.com/XSans02/AnyKernel3 AK3
-cd kernel || exit
+[[ "$1" == "sd" ]] || [[ "$1" == "aosp" ]] && {
+    [[ ! -d $BASE_DIR/arm32 ]] && {
+        git clone --depth=1 https://github.com/XSans02/arm-linux-androideabi-4.9 $BASE_DIR/arm32
+    }
+    [[ ! -d $BASE_DIR/arm32 ]] && {
+        git clone --depth=1 https://github.com/XSans02/aarch64-linux-android-4.9 $BASE_DIR/arm64
+    }
+}
+
+AK3_DIR="$BASE_DIR/AnyKernel3"
+[[ ! -d $AK3_DIR ]] && {
+    msg ""
+    msg "* Cloning AK3 Source..."
+    git clone --depth=1 -b master https://github.com/$KBUILD_BUILD_USER/AnyKernel3
+}
 
 # environtment
 KERNEL_DIR="$PWD"
-KERNEL_IMG="$KERNEL_DIR/out/arch/arm64/boot/Image"
+KERNEL_IMG="$KERNEL_DIR/out/arch/arm64/boot/Image.gz"
 KERNEL_DTBO="$KERNEL_DIR/out/arch/arm64/boot/dtbo.img"
-KERNEL_DTB="$KERNEL_DIR/out/arch/arm64/boot/dts/qcom/"
-AK3_DIR="$HOME/AK3/"
-BASE_DTB_NAME="sm8150-v2"
+KERNEL_DTB="$KERNEL_DIR/out/arch/arm64/boot/dtb.img"
 CODENAME="vayu"
 DEFCONFIG="vayu_defconfig"
 CORES=$(grep -c ^processor /proc/cpuinfo)
@@ -102,9 +94,9 @@ BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 COMMIT="$(git log --pretty=format:'%s' -1)"
 
 # Toolchain directory
-CLANG_DIR="$HOME/clang"
-GCC64_DIR="$HOME/arm64"
-GCC32_DIR="$HOME/arm32"
+CLANG_DIR="$BASE_DIR/"$1"-clang"
+GCC64_DIR="$BASE_DIR/arm64"
+GCC32_DIR="$BASE_DIR/arm32"
 PrefixDir="$CLANG_DIR/bin/"
 
 # Checking toolchain source
@@ -119,9 +111,6 @@ else
     ARM32=arm-linux-gnueabi-
 fi
 
-# Export kernel version
-export LOCALVERSION="-WeebX-R1.0"
-
 # Export
 export TZ="Asia/Jakarta"
 export ZIP_DATE="$(TZ=Asia/Jakarta date +'%Y%m%d')"
@@ -129,8 +118,6 @@ export ZIP_DATE2="$(TZ=Asia/Jakarta date +"%H%M")"
 export CURRENTDATE=$(TZ=Asia/Jakarta date +"%A, %d %b %Y, %H:%M:%S")
 export ARCH=arm64
 export SUBARCH=arm64
-export KBUILD_BUILD_USER="XSansツ"
-export KBUILD_BUILD_HOST="Wibu-Server"
 export KBUILD_COMPILER_STRING="$(${CLANG_DIR}/bin/clang --version | head -n 1 | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
 export PATH="$CLANG_DIR/bin:$GCC64_DIR/bin:$GCC32_DIR/bin:$PATH"
 
@@ -314,7 +301,7 @@ while true; do
 
     # Move kernel image to flashable dir
     if [[ "$menu" == "4" ]]; then
-        cp "$KERNEL_IMG" "$AK3_DIR"/
+        cp "$KERNEL_IMG" "$AK3_DIR"
         msg ""
         msg "(OK) Done moving kernel img to $AK3_DIR"
         msg ""
@@ -322,7 +309,7 @@ while true; do
 
     # Move dtbo to flashable dir
     if [ "$menu" == "5" ]; then
-        cp "$KERNEL_DTBO" "$AK3_DIR"/
+        mv "$KERNEL_DTBO" "$AK3_DIR"
 
         msg ""
         msg "(OK) Done moving dtbo to $AK3_DIR"
@@ -332,7 +319,7 @@ while true; do
     # Move dtb to flashable dir
     if [ "$menu" == "6" ]; then
         if [[ -f $KERNEL_DTB/${BASE_DTB_NAME}.dtb ]]; then
-		cp "$KERNEL_DTB/${BASE_DTB_NAME}.dtb" "$AK3_DIR/dtb.img"
+		mv "$KERNEL_DTB" "$AK3_DIR/dtb"
 	fi
         msg ""
         msg "(OK) Done moving dtb to $AK3_DIR"
@@ -342,7 +329,7 @@ while true; do
     # Make Zip
     if [[ "$menu" == "7" ]]; then
         cd "$AK3_DIR" || exit
-        ZIP_NAME=["$ZIP_DATE"]"$LOCALVERSION"-"$ZIP_DATE2".zip
+        ZIP_NAME=["$ZIP_DATE"]R.Y.N-"$ZIP_DATE2".zip
         zip -r9 "$ZIP_NAME" ./*
         cd "$KERNEL_DIR" || exit
 
