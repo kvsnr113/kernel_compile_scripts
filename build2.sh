@@ -2,8 +2,13 @@
 # Copyright ©2022 XSans02 - Modified by 113
 # Kernel Build Script
 
-HOME="$PWD"
-BASE_DIR="../$PWD"
+KERNEL_DIR="$PWD"
+cd ..
+BASE_DIR="$PWD"
+cd $KERNEL_DIR
+TOKEN="5382711200:AAFp0g3MrphAUgylIq8ynMAbfeOys8lzWTI"
+CHATID="-1001586260532"
+
 export KBUILD_BUILD_USER="kvsnr113"
 export KBUILD_BUILD_HOST="projkt113"
 
@@ -25,24 +30,17 @@ err(){
 
 msg "* Checking..."
 sleep 1
-[[ "$GIT_TOKEN" ]] && {
-    msg "(OK) Git Token"
+[[ "$TOKEN" ]] && {
+    msg "(OK) Token"
 } || {
-    err "(X) GIT_TOKEN Not Found"
+    err "(X) TOKEN Not Found"
     exit
 }
 sleep 1
-[[ "$TELEGRAM_TOKEN" ]] && {
-    msg "(OK) Telegram Token"
-} ||
-    err "(X) TELEGRAM_TOKEN Not Found"
-    exit
-}
-sleep 1
-[[ "$CHANNEL_ID" ]] && {
-    msg "(OK) Channel ID"
-} || 
-    err "(X) CHANNEL_ID Not Found"
+[[ "$CHATID" ]] && {
+    msg "(OK) Chat ID"
+} || {
+    err "(X) CHAT_ID Not Found"
     exit
 }
 sleep 1
@@ -50,39 +48,51 @@ sleep 1
 # Clone Toolchain Source
 if [[ "$1" == "weebx" ]]; then
     msg "* Use WeebX Clang..."
-    wget  $(curl https://github.com/XSans02/WeebX-Clang/raw/main/WeebX-Clang-link.txt 2>/dev/null) -O "WeebX-Clang.tar.gz"
-    mkdir $BASE_DIR/"$1"-clang && tar -xf WeebX-Clang.tar.gz -C $BASE_DIR/"$1"-clang && rm -rf WeebX-Clang.tar.gz
+    [[ ! -d $BASE_DIR//"$1"-clang ]] && {
+        wget  $(curl https://github.com/XSans02/WeebX-Clang/raw/main/WeebX-Clang-link.txt 2>/dev/null) -O "WeebX-Clang.tar.gz"
+        mkdir $BASE_DIR/"$1"-clang && tar -xf WeebX-Clang.tar.gz -C $BASE_DIR/"$1"-clang && rm -rf WeebX-Clang.tar.gz
+    }
 elif [[ "$1" == "azure" ]]; then
     msg "* Use Azure Clang..."
-    git clone --depth=1 https://gitlab.com/Panchajanya1999/azure-clang $BASE_DIR/"$1"-clang
+    [[ ! -d $BASE_DIR//"$1"-clang ]] && {
+        git clone --depth=1 https://gitlab.com/Panchajanya1999/azure-clang $BASE_DIR/"$1"-clang
+    }
 elif [[ "$1" == "sd" ]]; then
     msg "* Use SDClang..."
-    git clone --depth=1 https://github.com/ZyCromerZ/SDClang $BASE_DIR/"$1"-clang
+    [[ ! -d $BASE_DIR//"$1"-clang ]] && {
+        git clone --depth=1 https://github.com/ZyCromerZ/SDClang $BASE_DIR/"$1"-clang
+    }
 elif [[ "$1" == "aosp" ]]; then
     msg "* Use AOSP Clang..."
-    CVER="r450784e"
-    wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-"$CVER".tar.gz
-    mkdir $BASE_DIR/"$1"-clang && tar -xf clang-"$CVER".tar.gz -C $BASE_DIR/"$1"-clang && rm -rf clang-"$CVER".tar.gz
+    [[ ! -d $BASE_DIR//"$1"-clang ]] && {
+        CVER="r450784e"
+        wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-"$CVER".tar.gz
+        mkdir $BASE_DIR/"$1"-clang && tar -xf clang-"$CVER".tar.gz -C $BASE_DIR/"$1"-clang && rm -rf clang-"$CVER".tar.gz
+    }
 fi
 
 [[ "$1" == "sd" ]] || [[ "$1" == "aosp" ]] && {
     [[ ! -d $BASE_DIR/arm32 ]] && {
         git clone --depth=1 https://github.com/XSans02/arm-linux-androideabi-4.9 $BASE_DIR/arm32
     }
-    [[ ! -d $BASE_DIR/arm32 ]] && {
+    [[ ! -d $BASE_DIR/arm64 ]] && {
         git clone --depth=1 https://github.com/XSans02/aarch64-linux-android-4.9 $BASE_DIR/arm64
     }
+    ARM64=aarch64-linux-android-
+    ARM32=arm-linux-androideabi-
+} || {
+    ARM64=aarch64-linux-gnu-
+    ARM32=arm-linux-gnueabi-
 }
 
 AK3_DIR="$BASE_DIR/AnyKernel3"
 [[ ! -d $AK3_DIR ]] && {
     msg ""
     msg "* Cloning AK3 Source..."
-    git clone --depth=1 -b master https://github.com/$KBUILD_BUILD_USER/AnyKernel3
+    git clone --depth=1 https://github.com/$KBUILD_BUILD_USER/AnyKernel3 "$BASE_DIR/AnyKernel3"
 }
 
 # environtment
-KERNEL_DIR="$PWD"
 KERNEL_IMG="$KERNEL_DIR/out/arch/arm64/boot/Image.gz"
 KERNEL_DTBO="$KERNEL_DIR/out/arch/arm64/boot/dtbo.img"
 KERNEL_DTB="$KERNEL_DIR/out/arch/arm64/boot/dtb.img"
@@ -99,18 +109,6 @@ GCC64_DIR="$BASE_DIR/arm64"
 GCC32_DIR="$BASE_DIR/arm32"
 PrefixDir="$CLANG_DIR/bin/"
 
-# Checking toolchain source
-if [[ -d "$GCC64_DIR/aarch64-linux-android" ]]; then
-    ARM64=aarch64-linux-android-
-else
-    ARM64=aarch64-linux-gnu-
-fi
-if [[ -d "$GCC32_DIR/arm-linux-androideabi" ]]; then
-    ARM32=arm-linux-androideabi-
-else
-    ARM32=arm-linux-gnueabi-
-fi
-
 # Export
 export TZ="Asia/Jakarta"
 export ZIP_DATE="$(TZ=Asia/Jakarta date +'%Y%m%d')"
@@ -122,28 +120,51 @@ export KBUILD_COMPILER_STRING="$(${CLANG_DIR}/bin/clang --version | head -n 1 | 
 export PATH="$CLANG_DIR/bin:$GCC64_DIR/bin:$GCC32_DIR/bin:$PATH"
 
 # Telegram Setup
-git clone --depth=1 https://github.com/XSans02/Telegram Telegram
-
-TELEGRAM=Telegram/telegram
-send_msg() {
-  "${TELEGRAM}" -c "${CHANNEL_ID}" -H -D \
-      "$(
-          for POST in "${@}"; do
-              echo "${POST}"
-          done
-      )"
+send_msg(){
+    curl -s -X POST \
+        https://api.telegram.org/bot"$TOKEN"/sendMessage \
+        -d chat_id="$CHATID" \
+        -d text="$1" \
+        -d "parse_mode=html" \
+        -d "disable_web_page_preview=true"
 }
 
-send_file() {
-  "${TELEGRAM}" -f "$(echo "$AK3_DIR"/*.zip)" \
-  -c "${CHANNEL_ID}" -H \
-      "$1"
+send_file(){
+    curl -s -X POST \
+        https://api.telegram.org/bot"$TOKEN"/sendDocument \
+        -F chat_id="$CHATID" \
+        -F document=@"$1" \
+        -F caption="$2" \
+        -F "parse_mode=html" \
+        -F "disable_web_page_preview=true"
 }
 
-send_log() {
-  "${TELEGRAM}" -f "$(echo out/log.txt)" \
-  -c "${CHANNEL_ID}" -H \
-      "$1"
+send_build_msg(){
+send_msg "
+<b>New Kernel On The Way</b>
+<b>==================================</b>
+<b>Device : </b>
+<code>* $CODENAME</code>
+<b>Branch : </b>
+<code>* $BRANCH</code>
+<b>Build Using : </b>
+<code>* $CPU $CORES thread</code>
+<b>Last Commit : </b>
+<code>* $COMMIT</code>
+<b>==================================</b>"
+}
+
+send_success_msg(){
+send_msg "
+<b>Build Successfully</b>
+<b>==================================</b>
+<b>Build Date : </b>
+<code>* $(date +"%A, %d %b %Y, %H:%M:%S")</code>
+<b>Build Took : </b>
+<code>* $(("$TOTAL_TIME" / 60)) Minutes, $(("$TOTAL_TIME" % 60)) Second.</code>
+<b>Compiler : </b>
+<code>* $KBUILD_COMPILER_STRING</code>
+<b>==================================</b>"
 }
 
 # Menu
@@ -180,18 +201,7 @@ while true; do
         START=$(date +"%s")
         msg "(OK) Start Compile kernel for $CODENAME, started at $CURRENTDATE using $CPU $CORES thread"
         msg ""
-        send_msg "<b>New Kernel On The Way</b>" \
-                 "<b>==================================</b>" \
-                 "<b>Device : </b>" \
-                 "<code>* $CODENAME</code>" \
-                 "<b>Branch : </b>" \
-                 "<code>* $BRANCH</code>" \
-                 "<b>Build Using : </b>" \
-                 "<code>* $CPU $CORES thread</code>" \
-                 "<b>Last Commit : </b>" \
-                 "<code>* $COMMIT</code>" \
-                 "<b>==================================</b>"
-
+        send_build_msg
         # Run Build
         make -j"$CORES" O=out \
             CC=clang \
@@ -207,31 +217,21 @@ while true; do
             CLANG_TRIPLE=aarch64-linux-gnu- \
             CROSS_COMPILE=${ARM64} \
             CROSS_COMPILE_ARM32=${ARM32} 2>&1 | tee out/log.txt
-
         if ! [ -a "$KERNEL_IMG" ]; then
             err ""
             err "(X) Compile Kernel for $CODENAME failed, See buildlog to fix errors"
             err ""
-            send_log "<b>Build Failed, See log to fix errors</b>"
+            send_file "out/log.txt" 
+	    send_msg "<b>Build Failed, See log to fix errors</b>"
             exit
         fi
-
         END=$(date +"%s")
         TOTAL_TIME=$(("$END" - "$START"))
         msg ""
         msg "(OK) Compile Kernel for $CODENAME successfully, Kernel Image in $KERNEL_IMG"
         msg "(OK) Total time elapsed: $(("$TOTAL_TIME" / 60)) Minutes, $(("$TOTAL_TIME" % 60)) Second."
         msg ""
-
-        send_msg "<b>Build Successfully</b>" \
-                 "<b>==================================</b>" \
-                 "<b>Build Date : </b>" \
-                 "<code>* $(date +"%A, %d %b %Y, %H:%M:%S")</code>" \
-                 "<b>Build Took : </b>" \
-                 "<code>* $(("$TOTAL_TIME" / 60)) Minutes, $(("$TOTAL_TIME" % 60)) Second.</code>" \
-                 "<b>Compiler : </b>" \
-                 "<code>* $KBUILD_COMPILER_STRING</code>" \
-                 "<b>==================================</b>"
+        send_success_msg
     fi
 
         # Build With Clang LLVM
@@ -240,18 +240,7 @@ while true; do
         START=$(date +"%s")
         msg "(OK) Start Compile kernel for $CODENAME, started at $CURRENTDATE using $CPU $CORES thread"
         msg ""
-        send_msg "<b>New Kernel On The Way</b>" \
-                 "<b>==================================</b>" \
-                 "<b>Device : </b>" \
-                 "<code>* $CODENAME</code>" \
-                 "<b>Branch : </b>" \
-                 "<code>* $BRANCH</code>" \
-                 "<b>Build Using : </b>" \
-                 "<code>* $CPU $CORES thread</code>" \
-                 "<b>Last Commit : </b>" \
-                 "<code>* $COMMIT</code>" \
-                 "<b>==================================</b>"
-
+        send_build_msg
         # Run Build
         make -j"$CORES" O=out \
             CC=clang \
@@ -267,36 +256,26 @@ while true; do
             HOSTCC=clang \
             HOSTCXX=clang++ \
             HOSTAR=${PrefixDir}llvm-ar \
-	    HOSTLD=${PrefixDir}ld.lld \
+            HOSTLD=${PrefixDir}ld.lld \
             CLANG_TRIPLE=aarch64-linux-gnu- \
             CROSS_COMPILE=${ARM64} \
             CROSS_COMPILE_ARM32=${ARM32} \
             LLVM=1 2>&1 | tee out/log.txt
-
         if ! [ -a "$KERNEL_IMG" ]; then
             err ""
             err "(X) Compile Kernel for $CODENAME failed, See buildlog to fix errors"
             err ""
-            send_log "<b>Build Failed, See log to fix errors</b>"
+            send_file "out/log.txt" 
+	    send_msg "<b>Build Failed, See log to fix errors</b>"
             exit
         fi
-
         END=$(date +"%s")
         TOTAL_TIME=$(("$END" - "$START"))
         msg ""
         msg "(OK) Compile Kernel for $CODENAME successfully, Kernel Image in $KERNEL_IMG"
         msg "(OK) Total time elapsed: $(("$TOTAL_TIME" / 60)) Minutes, $(("$TOTAL_TIME" % 60)) Second."
         msg ""
-
-        send_msg "<b>Build Successfully</b>" \
-                 "<b>==================================</b>" \
-                 "<b>Build Date : </b>" \
-                 "<code>* $(date +"%A, %d %b %Y, %H:%M:%S")</code>" \
-                 "<b>Build Took : </b>" \
-                 "<code>* $(("$TOTAL_TIME" / 60)) Minutes, $(("$TOTAL_TIME" % 60)) Second.</code>" \
-                 "<b>Compiler : </b>" \
-                 "<code>* $KBUILD_COMPILER_STRING</code>" \
-                 "<b>==================================</b>"
+        send_success_msg
     fi
 
     # Move kernel image to flashable dir
@@ -310,7 +289,6 @@ while true; do
     # Move dtbo to flashable dir
     if [ "$menu" == "5" ]; then
         mv "$KERNEL_DTBO" "$AK3_DIR"
-
         msg ""
         msg "(OK) Done moving dtbo to $AK3_DIR"
         msg ""
@@ -318,9 +296,7 @@ while true; do
 
     # Move dtb to flashable dir
     if [ "$menu" == "6" ]; then
-        if [[ -f $KERNEL_DTB/${BASE_DTB_NAME}.dtb ]]; then
-		mv "$KERNEL_DTB" "$AK3_DIR/dtb"
-	fi
+        mv "$KERNEL_DTB" "$AK3_DIR/dtb"
         msg ""
         msg "(OK) Done moving dtb to $AK3_DIR"
         msg ""
@@ -332,7 +308,6 @@ while true; do
         ZIP_NAME=["$ZIP_DATE"]R.Y.N-"$ZIP_DATE2".zip
         zip -r9 "$ZIP_NAME" ./*
         cd "$KERNEL_DIR" || exit
-
         msg ""
         msg "(OK) Done Zipping Kernel"
         msg ""
@@ -340,11 +315,11 @@ while true; do
 
     # Upload Telegram
     if [[ "$menu" == "8" ]]; then
-        send_log
-        send_file "<b>md5 : </b><code>$(md5sum "$AK3_DIR/$ZIP_NAME" | cut -d' ' -f1)</code>"
-
+        send_file "out/log.txt"
+        send_file "$AK3_DIR/$ZIP_NAME"
+	send_msg "<b>md5 : </b><code>$(md5sum "$AK3_DIR/$ZIP_NAME" | cut -d' ' -f1)</code>"
         msg ""
-	    msg "(OK) Done Upload to Telegram"
+        msg "(OK) Done Upload to Telegram"
         msg ""
     fi
 
@@ -356,7 +331,6 @@ while true; do
             send_msg "<code>$ZIP_NAME</code>" \
                      "<b>md5 : </b><code>$(md5sum "$AK3_DIR/$ZIP_NAME" | cut -d' ' -f1)</code>" \
                      "<b>Uploaded to gdrive</b>"
-
             msg ""
             msg "(OK) Done Upload to Gdrive"
             msg ""
@@ -371,5 +345,4 @@ while true; do
     if [[ "$menu" == "e" ]]; then
         exit
     fi
-
 done
