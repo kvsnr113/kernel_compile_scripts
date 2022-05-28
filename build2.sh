@@ -216,7 +216,8 @@ while true; do
             READELF=llvm-readelf \
             CLANG_TRIPLE=aarch64-linux-gnu- \
             CROSS_COMPILE=${ARM64} \
-            CROSS_COMPILE_ARM32=${ARM32} 2>&1 | tee out/log.txt
+            CROSS_COMPILE_ARM32=${ARM32} \
+            Image.gz dtbo.img dtb.img 2>&1 | tee out/log.txt
         if ! [ -a "$KERNEL_IMG" ]; then
             err ""
             err "(X) Compile Kernel for $CODENAME failed, See buildlog to fix errors"
@@ -260,7 +261,8 @@ while true; do
             CLANG_TRIPLE=aarch64-linux-gnu- \
             CROSS_COMPILE=${ARM64} \
             CROSS_COMPILE_ARM32=${ARM32} \
-            LLVM=1 2>&1 | tee out/log.txt
+            LLVM=1 \
+            Image.gz dtbo.img dtb.img 2>&1 | tee out/log.txt
         if ! [ -a "$KERNEL_IMG" ]; then
             err ""
             err "(X) Compile Kernel for $CODENAME failed, See buildlog to fix errors"
