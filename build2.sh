@@ -45,7 +45,6 @@ sleep 1
 }
 sleep 1
 
-# Clone Toolchain Source
 if [[ "$1" == "weebx" ]]; then
     msg "* Use WeebX Clang..."
     [[ ! -d $BASE_DIR//"$1"-clang ]] && {
