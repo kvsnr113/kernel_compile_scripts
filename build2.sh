@@ -141,7 +141,7 @@ send_file(){
 
 send_build_msg(){
 send_msg "
-<b>New Kernel On The Way</b>
+<b>Build Triggered !</b>
 <b>==================================</b>
 <b>Device : </b>
 <code>* $CODENAME</code>
@@ -149,6 +149,8 @@ send_msg "
 <code>* $BRANCH</code>
 <b>Build Using : </b>
 <code>* $CPU $CORES thread</code>
+<b>Compiler : </b>
+<code>* $KBUILD_COMPILER_STRING</code>
 <b>Last Commit : </b>
 <code>* $COMMIT</code>
 <b>==================================</b>"
@@ -156,14 +158,12 @@ send_msg "
 
 send_success_msg(){
 send_msg "
-<b>Build Successfully</b>
+<b>Build Success !</b>
 <b>==================================</b>
 <b>Build Date : </b>
 <code>* $(date +"%A, %d %b %Y, %H:%M:%S")</code>
 <b>Build Took : </b>
 <code>* $(("$TOTAL_TIME" / 60)) Minutes, $(("$TOTAL_TIME" % 60)) Second.</code>
-<b>Compiler : </b>
-<code>* $KBUILD_COMPILER_STRING</code>
 <b>==================================</b>"
 }
 
