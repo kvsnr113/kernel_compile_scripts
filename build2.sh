@@ -92,10 +92,11 @@ AK3_DIR="$BASE_DIR/AnyKernel3"
     git clone --depth=1 https://github.com/$KBUILD_BUILD_USER/AnyKernel3 "$BASE_DIR/AnyKernel3"
 }
 
-# environtment
 KERNEL_IMG="$KERNEL_DIR/out/arch/arm64/boot/Image.gz"
 KERNEL_DTBO="$KERNEL_DIR/out/arch/arm64/boot/dtbo.img"
-KERNEL_DTB="$KERNEL_DIR/out/arch/arm64/boot/dtb.img"
+KERNEL_DTB="$KERNEL_DIR/out/arch/arm64/boot/dts/qcom/sm8150-v2.dtb"
+ZIP_NAME=["$ZIP_DATE"]R.Y.N-"$ZIP_DATE2".zip
+
 CODENAME="vayu"
 DEFCONFIG="vayu_defconfig"
 CORES=$(grep -c ^processor /proc/cpuinfo)
@@ -103,13 +104,11 @@ CPU=$(lscpu | sed -nr '/Model name/ s/.*:\s*(.*) */\1/p')
 BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 COMMIT="$(git log --pretty=format:'%s' -1)"
 
-# Toolchain directory
 CLANG_DIR="$BASE_DIR/"$1"-clang"
 GCC64_DIR="$BASE_DIR/arm64"
 GCC32_DIR="$BASE_DIR/arm32"
 PrefixDir="$CLANG_DIR/bin/"
 
-# Export
 export TZ="Asia/Jakarta"
 export ZIP_DATE="$(TZ=Asia/Jakarta date +'%Y%m%d')"
 export ZIP_DATE2="$(TZ=Asia/Jakarta date +"%H%M")"
@@ -119,7 +118,6 @@ export SUBARCH=arm64
 export KBUILD_COMPILER_STRING="$(${CLANG_DIR}/bin/clang --version | head -n 1 | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')"
 export PATH="$CLANG_DIR/bin:$GCC64_DIR/bin:$GCC32_DIR/bin:$PATH"
 
-# Telegram Setup
 send_msg(){
     curl -s -X POST \
         https://api.telegram.org/bot"$TOKEN"/sendMessage \
@@ -167,7 +165,6 @@ send_msg "
 <b>==================================</b>"
 }
 
-# Menu
 while true; do
     panel ""
     panel " Menu                                                               "
@@ -180,14 +177,12 @@ while true; do
     panel " ║ 6. Copy dtb to Flashable Dir                                    ║"
     panel " ║ 7. Make Zip                                                     ║"
     panel " ║ 8. Upload to Telegram                                           ║"
-    panel " ║ 9. Upload to Gdrive                                             ║"
     panel " ║ e. Back Main Menu                                               ║"
     panel " ╚═════════════════════════════════════════════════════════════════╝"
     panel2 " Enter your choice 1-9, or press 'e' for back to Main Menu : "
 
     read -r menu
 
-    # Export deconfig
     if [[ "$menu" == "1" ]]; then
         make O=out $DEFCONFIG
         msg ""
@@ -195,7 +190,6 @@ while true; do
         msg ""
     fi
 
-    # Build With Clang
     if [[ "$menu" == "2" ]]; then
         msg ""
         START=$(date +"%s")
@@ -217,12 +211,12 @@ while true; do
             CLANG_TRIPLE=aarch64-linux-gnu- \
             CROSS_COMPILE=${ARM64} \
             CROSS_COMPILE_ARM32=${ARM32} \
-            Image.gz dtbo.img dtb.img 2>&1 | tee out/log.txt
+            Image.gz dtbo.img 2>&1 | tee out/log.txt
         if ! [ -a "$KERNEL_IMG" ]; then
             err ""
             err "(X) Compile Kernel for $CODENAME failed, See buildlog to fix errors"
             err ""
-            send_file "out/log.txt" 
+            send_file "out/log.txt"
 	    send_msg "<b>Build Failed, See log to fix errors</b>"
             exit
         fi
@@ -235,7 +229,6 @@ while true; do
         send_success_msg
     fi
 
-        # Build With Clang LLVM
     if [[ "$menu" == "3" ]]; then
         msg ""
         START=$(date +"%s")
@@ -262,12 +255,12 @@ while true; do
             CROSS_COMPILE=${ARM64} \
             CROSS_COMPILE_ARM32=${ARM32} \
             LLVM=1 \
-            Image.gz dtbo.img dtb.img 2>&1 | tee out/log.txt
+            Image.gz dtbo.img 2>&1 | tee out/log.txt
         if ! [ -a "$KERNEL_IMG" ]; then
             err ""
             err "(X) Compile Kernel for $CODENAME failed, See buildlog to fix errors"
             err ""
-            send_file "out/log.txt" 
+            send_file "out/log.txt"
 	    send_msg "<b>Build Failed, See log to fix errors</b>"
             exit
         fi
@@ -280,7 +273,6 @@ while true; do
         send_success_msg
     fi
 
-    # Move kernel image to flashable dir
     if [[ "$menu" == "4" ]]; then
         cp "$KERNEL_IMG" "$AK3_DIR"
         msg ""
@@ -288,63 +280,38 @@ while true; do
         msg ""
     fi
 
-    # Move dtbo to flashable dir
     if [ "$menu" == "5" ]; then
-        mv "$KERNEL_DTBO" "$AK3_DIR"
+        cp "$KERNEL_DTBO" "$AK3_DIR"
         msg ""
         msg "(OK) Done moving dtbo to $AK3_DIR"
         msg ""
     fi
 
-    # Move dtb to flashable dir
     if [ "$menu" == "6" ]; then
-        mv "$KERNEL_DTB" "$AK3_DIR/dtb"
+        cp "$KERNEL_DTB" "$AK3_DIR/dtb"
         msg ""
         msg "(OK) Done moving dtb to $AK3_DIR"
         msg ""
     fi
 
-    # Make Zip
     if [[ "$menu" == "7" ]]; then
         cd "$AK3_DIR" || exit
-        ZIP_NAME=["$ZIP_DATE"]R.Y.N-"$ZIP_DATE2".zip
-        rm *.zip
-        zip -r9 "$ZIP_NAME" ./*
+        zip -r9 "$BASE_DIR/$ZIP_NAME" * -x .git README.md *placeholder
         cd "$KERNEL_DIR" || exit
         msg ""
         msg "(OK) Done Zipping Kernel"
         msg ""
     fi
 
-    # Upload Telegram
     if [[ "$menu" == "8" ]]; then
         send_file "out/log.txt"
-        send_file "$AK3_DIR/$ZIP_NAME"
-	send_msg "<b>md5 : </b><code>$(md5sum "$AK3_DIR/$ZIP_NAME" | cut -d' ' -f1)</code>"
+        send_file "$BASE_DIR/$ZIP_NAME"
+	send_msg "<b>md5 : </b><code>$(md5sum "$BASE_DIR/$ZIP_NAME" | cut -d' ' -f1)</code>"
         msg ""
         msg "(OK) Done Upload to Telegram"
         msg ""
     fi
 
-    # Upload Gdrive
-    if [[ "$menu" == "9" ]]; then
-        if [[ -d "/usr/sbin/gdrive" ]]; then
-            gdrive upload "$AK3_DIR/$ZIP_NAME"
-            send_log
-            send_msg "<code>$ZIP_NAME</code>" \
-                     "<b>md5 : </b><code>$(md5sum "$AK3_DIR/$ZIP_NAME" | cut -d' ' -f1)</code>" \
-                     "<b>Uploaded to gdrive</b>"
-            msg ""
-            msg "(OK) Done Upload to Gdrive"
-            msg ""
-        else
-            err ""
-            err "Please setup your gdrive first!"
-            err ""
-        fi
-    fi
-
-    # Exit
     if [[ "$menu" == "e" ]]; then
         exit
     fi
