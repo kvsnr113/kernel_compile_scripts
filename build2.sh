@@ -95,7 +95,6 @@ AK3_DIR="$BASE_DIR/AnyKernel3"
 KERNEL_IMG="$KERNEL_DIR/out/arch/arm64/boot/Image.gz"
 KERNEL_DTBO="$KERNEL_DIR/out/arch/arm64/boot/dtbo.img"
 KERNEL_DTB="$KERNEL_DIR/out/arch/arm64/boot/dts/qcom/sm8150-v2.dtb"
-ZIP_NAME=["$ZIP_DATE"]R.Y.N-"$ZIP_DATE2".zip
 
 CODENAME="vayu"
 DEFCONFIG="vayu_defconfig"
@@ -110,8 +109,6 @@ GCC32_DIR="$BASE_DIR/arm32"
 PrefixDir="$CLANG_DIR/bin/"
 
 export TZ="Asia/Jakarta"
-export ZIP_DATE="$(TZ=Asia/Jakarta date +'%Y%m%d')"
-export ZIP_DATE2="$(TZ=Asia/Jakarta date +"%H%M")"
 export CURRENTDATE=$(TZ=Asia/Jakarta date +"%A, %d %b %Y, %H:%M:%S")
 export ARCH=arm64
 export SUBARCH=arm64
@@ -183,20 +180,19 @@ while true; do
 
     read -r menu
 
-    if [[ "$menu" == "1" ]]; then
+    [[ "$menu" == "1" ]] && {
         make O=out $DEFCONFIG
         msg ""
         msg "(OK) Success export $DEFCONFIG to Out Dir"
         msg ""
-    fi
+    }
 
-    if [[ "$menu" == "2" ]]; then
+    [[ "$menu" == "2" ]] && {
         msg ""
         START=$(date +"%s")
         msg "(OK) Start Compile kernel for $CODENAME, started at $CURRENTDATE using $CPU $CORES thread"
         msg ""
         send_build_msg
-        # Run Build
         make -j"$CORES" O=out \
             CC=clang \
             LD=ld.lld \
@@ -212,14 +208,14 @@ while true; do
             CROSS_COMPILE=${ARM64} \
             CROSS_COMPILE_ARM32=${ARM32} \
             Image.gz dtbo.img 2>&1 | tee out/log.txt
-        if ! [ -a "$KERNEL_IMG" ]; then
+        [[ ! -e "$KERNEL_IMG" ]] && {
             err ""
             err "(X) Compile Kernel for $CODENAME failed, See buildlog to fix errors"
             err ""
             send_file "out/log.txt"
-	    send_msg "<b>Build Failed, See log to fix errors</b>"
+            send_msg "<b>Build Failed, See log to fix errors</b>"
             exit
-        fi
+        }
         END=$(date +"%s")
         TOTAL_TIME=$(("$END" - "$START"))
         msg ""
@@ -227,15 +223,14 @@ while true; do
         msg "(OK) Total time elapsed: $(("$TOTAL_TIME" / 60)) Minutes, $(("$TOTAL_TIME" % 60)) Second."
         msg ""
         send_success_msg
-    fi
+    }
 
-    if [[ "$menu" == "3" ]]; then
+    [[ "$menu" == "3" ]] && {
         msg ""
         START=$(date +"%s")
         msg "(OK) Start Compile kernel for $CODENAME, started at $CURRENTDATE using $CPU $CORES thread"
         msg ""
         send_build_msg
-        # Run Build
         make -j"$CORES" O=out \
             CC=clang \
             LD=${PrefixDir}ld.lld \
@@ -256,14 +251,14 @@ while true; do
             CROSS_COMPILE_ARM32=${ARM32} \
             LLVM=1 \
             Image.gz dtbo.img 2>&1 | tee out/log.txt
-        if ! [ -a "$KERNEL_IMG" ]; then
+        [[ ! -e "$KERNEL_IMG" ]] && {
             err ""
             err "(X) Compile Kernel for $CODENAME failed, See buildlog to fix errors"
             err ""
             send_file "out/log.txt"
-	    send_msg "<b>Build Failed, See log to fix errors</b>"
+            send_msg "<b>Build Failed, See log to fix errors</b>"
             exit
-        fi
+        }
         END=$(date +"%s")
         TOTAL_TIME=$(("$END" - "$START"))
         msg ""
@@ -271,48 +266,48 @@ while true; do
         msg "(OK) Total time elapsed: $(("$TOTAL_TIME" / 60)) Minutes, $(("$TOTAL_TIME" % 60)) Second."
         msg ""
         send_success_msg
-    fi
+    }
 
-    if [[ "$menu" == "4" ]]; then
+    [[ "$menu" == "4" ]] && {
         cp "$KERNEL_IMG" "$AK3_DIR"
         msg ""
         msg "(OK) Done moving kernel img to $AK3_DIR"
         msg ""
-    fi
+    }
 
-    if [ "$menu" == "5" ]; then
+    [[ "$menu" == "5" ]] && {
         cp "$KERNEL_DTBO" "$AK3_DIR"
         msg ""
         msg "(OK) Done moving dtbo to $AK3_DIR"
         msg ""
-    fi
+    }
 
-    if [ "$menu" == "6" ]; then
+    [[ "$menu" == "6" ]] && {
         cp "$KERNEL_DTB" "$AK3_DIR/dtb"
         msg ""
         msg "(OK) Done moving dtb to $AK3_DIR"
         msg ""
-    fi
+    }
 
-    if [[ "$menu" == "7" ]]; then
-        cd "$AK3_DIR" || exit
+    [[ "$menu" == "7" ]] && {
+        cd "$AK3_DIR"
+        ZIP_NAME=["$(TZ=Asia/Jakarta date +'%Y%m%d')"]R.Y.N-"$(TZ=Asia/Jakarta date +"%H%M")".zip
         zip -r9 "$BASE_DIR/$ZIP_NAME" * -x .git README.md *placeholder
-        cd "$KERNEL_DIR" || exit
+        cd "$KERNEL_DIR"
         msg ""
         msg "(OK) Done Zipping Kernel"
         msg ""
-    fi
+    }
 
-    if [[ "$menu" == "8" ]]; then
+    [[ "$menu" == "8" ]] && {
         send_file "out/log.txt"
         send_file "$BASE_DIR/$ZIP_NAME"
-	send_msg "<b>md5 : </b><code>$(md5sum "$BASE_DIR/$ZIP_NAME" | cut -d' ' -f1)</code>"
+        send_msg "<b>md5 : </b><code>$(md5sum "$BASE_DIR/$ZIP_NAME" | cut -d' ' -f1)</code>"
         msg ""
         msg "(OK) Done Upload to Telegram"
         msg ""
-    fi
+    }
 
-    if [[ "$menu" == "e" ]]; then
-        exit
-    fi
+    [[ "$menu" == "e" ]] && exit
+
 done
