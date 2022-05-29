@@ -308,6 +308,7 @@ while true; do
     if [[ "$menu" == "7" ]]; then
         cd "$AK3_DIR" || exit
         ZIP_NAME=["$ZIP_DATE"]R.Y.N-"$ZIP_DATE2".zip
+        rm *.zip
         zip -r9 "$ZIP_NAME" ./*
         cd "$KERNEL_DIR" || exit
         msg ""
