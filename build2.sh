@@ -48,8 +48,8 @@ sleep 1
 if [[ "$1" == "weebx" ]]; then
     msg "* Use WeebX Clang..."
     [[ ! -d $BASE_DIR//"$1"-clang ]] && {
-        wget  $(curl https://github.com/XSans02/WeebX-Clang/raw/main/WeebX-Clang-link.txt 2>/dev/null) -O "WeebX-Clang.tar.gz"
-        mkdir $BASE_DIR/"$1"-clang && tar -xf WeebX-Clang.tar.gz -C $BASE_DIR/"$1"-clang && rm -rf WeebX-Clang.tar.gz
+        wget https://github.com/XSans02/WeebX-Clang/raw/main/WeebX-Clang-link.txt -O link.txt && wget $(cat link.txt) -O "WeebX-Clang.tar.gz"
+        mkdir $BASE_DIR/"$1"-clang && tar -xf WeebX-Clang.tar.gz -C $BASE_DIR/"$1"-clang && rm -rf WeebX-Clang.tar.gz link.txr
     }
 elif [[ "$1" == "azure" ]]; then
     msg "* Use Azure Clang..."
