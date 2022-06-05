@@ -21,7 +21,7 @@ build_kernel(){
         }
         make O=out ARCH=arm64 $DEFCONFIG
         [[ "$1" == "clang" ]] && {
-                export TC_DIR="$HOME/azure-clang"
+                export TC_DIR="../azure-clang"
                 export PATH="$TC_DIR/bin:$PATH"
                 make -j$(nproc --all) \
                     O=out \
