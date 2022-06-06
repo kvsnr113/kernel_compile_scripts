@@ -17,6 +17,9 @@ cd $KERNEL_DIR
 TOKEN="5382711200:AAFp0g3MrphAUgylIq8ynMAbfeOys8lzWTI"
 CHATID="-1001586260532"
 
+export KBUILD_BUILD_USER="kvsnr113"
+export KBUILD_BUILD_HOST="projkt113"
+
 [[ -z "$TOKEN" ]] || [[ -z "$CHATID" ]] && {
         echo -e "(X) Something Missing ! , Check Token / Chat ID Variable !"
         echo -e "Enter Your Telegram Chat ID :"
@@ -84,8 +87,6 @@ CPU="$(lscpu | sed -nr '/Model name/ s/.*:\s*(.*) */\1/p')"
 BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 COMMIT="$(git log --pretty=format:'%s' -1)"
 
-export KBUILD_BUILD_USER="kvsnr113"
-export KBUILD_BUILD_HOST="projkt113"
 export ARCH=arm64
 export SUBARCH=arm64
 
