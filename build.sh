@@ -146,7 +146,7 @@ while true; do
         	echo -e "(OK) Start Compiling kernel for $CODENAME at $CURRENTDATE using $CPU !"
         	send_build_msg
 		[[ "$1" == "sd" ]] || [[ "$1" == "aosp" ]] && {
-			make -j"$CORES" O=out \
+			make -j"$(nproc --all)" O=out \
 				CC=clang \
             			LD=${PREFIXDIR}ld.lld \
             			AR=${PREFIXDIR}llvm-ar \
@@ -167,7 +167,7 @@ while true; do
             			LLVM=1 \
             			Image.gz dtbo.img 2>&1 | tee out/log.txt
 		} || {
-        		make -j"$CORES" O=out \
+        		make -j"$(nproc --all)" O=out \
             			CC=clang \
             			LD=ld.lld \
             			AR=llvm-ar \
