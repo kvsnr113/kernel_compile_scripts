@@ -19,6 +19,9 @@ CPU="$(lscpu | sed -nr '/Model name/ s/.*:\s*(.*) */\1/p')"
 TOKEN="5382711200:AAFp0g3MrphAUgylIq8ynMAbfeOys8lzWTI"
 CHATID="-1001586260532"
 
+export KBUILD_BUILD_USER="kvsnr113"
+export KBUILD_BUILD_HOST="projkt113"
+
 [[ -z "$TOKEN" ]] || [[ -z "$CHATID" ]] && {
     	echo -e "(X) Something Missing ! , Check Token / Chat ID Variable !"
     	echo -e "Enter Your Telegram Chat ID :"
@@ -78,10 +81,9 @@ AK3_DIR="$BASE_DIR/AnyKernel3"
 CODENAME="vayu"
 DEFCONFIG="vayu_defconfig"
 COMPILER="$(${CLANG_DIR}/bin/clang --version | head -n 1 | sed 's/[[:space:]]*$//;s/ ([^()]*)//g')"
+
 export ARCH=arm64
 export SUBARCH=arm64
-export KBUILD_BUILD_USER="kvsnr113"
-export KBUILD_BUILD_HOST="projkt113"
 
 send_msg(){
 	curl -s -X POST \
@@ -105,7 +107,10 @@ send_file(){
 send_build_msg(){
 send_msg "
 <b>Build Triggered !</b>
-<b>Build With</b> <code>$CPU</code>
+<b>Build With</b>
+<b>•</b> <code>$CPU</code>
+<b>•</b> <b>RAM</b> <code>$(cat /proc/meminfo | numfmt --field 2 --from-unit=Ki --to-unit=Mi | sed 's/ kB/M/g' | grep 'MemTotal' | awk -F ':' '{print $2}' | tr -d ' ')</code> | <b>FREE</b> <code>$(cat /proc/meminfo | numfmt --field 2 --from-unit=Ki --to-unit=Mi | sed 's/ kB/M/g' | grep 'MemFree' | awk -F ':' '{print $2}' | tr -d ' ')</code> | <b>Swap</b> <code>$(cat /proc/meminfo | numfmt --field 2 --from-unit=Ki --to-unit=Mi | sed 's/ kB/M/g' | grep 'SwapTotal' | awk -F ':' '{print $2}' | tr -d ' ')</code>
+<b>•</b> <code>$COMPILER</code>
 <b>==================================</b>
 <b>Device : </b><code>$CODENAME</code>
 <b>Branch : </b><code>$(git rev-parse --abbrev-ref HEAD)</code>
