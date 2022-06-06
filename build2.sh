@@ -114,12 +114,9 @@ send_msg "
 <b>Build Triggered !</b>
 <b>Build With</b> <code>$CPU</code> 
 <b>==================================</b>
-<b>Device : </b>
-<code>$CODENAME</code>
-<b>Branch : </b>
-<code>$BRANCH</code>
-<b>Last Commit : </b>
-<code>$COMMIT</code>
+<b>Device : </b><code>$CODENAME</code>
+<b>Branch : </b><code>$BRANCH</code>
+<b>Last Commit : </b><code>$COMMIT</code>
 <b>==================================</b>"
 }
 
