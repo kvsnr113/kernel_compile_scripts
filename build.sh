@@ -12,12 +12,15 @@ export TZ="Asia/Jakarta"
 KERNEL_DIR="$PWD"
 cd ..
 BASE_DIR="$PWD"
-cd $KERNEL_DIR
+cd "$KERNEL_DIR"
 
 CPU="$(lscpu | sed -nr '/Model name/ s/.*:\s*(.*) */\1/p')"
 
 TOKEN="5382711200:AAFp0g3MrphAUgylIq8ynMAbfeOys8lzWTI"
 CHATID="-1001586260532"
+
+CODENAME="vayu"
+DEFCONFIG="vayu_defconfig"
 
 export KBUILD_BUILD_USER="kvsnr113"
 export KBUILD_BUILD_HOST="projkt113"
@@ -34,20 +37,16 @@ export KBUILD_BUILD_HOST="projkt113"
 
 CLANG_DIR="$BASE_DIR/"$1"-clang"
 if [[ "$1" == "weebx" ]]; then
-        [[ ! -d $BASE_DIR//"$1"-clang ]] && {
+        [[ ! -d "$BASE_DIR/"$1"-clang" ]] && {
                 wget https://github.com/XSans02/WeebX-Clang/raw/main/WeebX-Clang-link.txt -O link.txt && wget $(cat link.txt) -O "WeebX-Clang.tar.gz"
                 mkdir $BASE_DIR/"$1"-clang && tar -xf WeebX-Clang.tar.gz -C $BASE_DIR/"$1"-clang && rm -rf WeebX-Clang.tar.gz link.txt
         }
 elif [[ "$1" == "azure" ]]; then
-        [[ ! -d $BASE_DIR//"$1"-clang ]] && {
-                git clone --depth=1 https://gitlab.com/Panchajanya1999/azure-clang $BASE_DIR/"$1"-clang
-        }
+        [[ ! -d "$BASE_DIR/"$1"-clang" ]] && git clone --depth=1 https://gitlab.com/Panchajanya1999/azure-clang $BASE_DIR/"$1"-clang
 elif [[ "$1" == "sd" ]]; then
-        [[ ! -d $BASE_DIR//"$1"-clang ]] && {
-                git clone --depth=1 https://github.com/ZyCromerZ/SDClang $BASE_DIR/"$1"-clang
-        }
+        [[ ! -d "$BASE_DIR/"$1"-clang" ]] && git clone --depth=1 https://github.com/ZyCromerZ/SDClang $BASE_DIR/"$1"-clang
 elif [[ "$1" == "aosp" ]]; then
-        [[ ! -d $BASE_DIR//"$1"-clang ]] && {
+        [[ ! -d "$BASE_DIR/"$1"-clang" ]] && {
                 CVER="r450784e"
                 wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-"$CVER".tar.gz
                 mkdir $BASE_DIR/"$1"-clang && tar -xf clang-"$CVER".tar.gz -C $BASE_DIR/"$1"-clang && rm -rf clang-"$CVER".tar.gz
@@ -55,35 +54,24 @@ elif [[ "$1" == "aosp" ]]; then
 fi
 
 [[ "$1" == "sd" ]] || [[ "$1" == "aosp" ]] && {
-        [[ ! -d $BASE_DIR/arm32 ]] && {
-                git clone --depth=1 https://github.com/XSans02/arm-linux-androideabi-4.9 $BASE_DIR/arm32
-        }
-        [[ ! -d $BASE_DIR/arm64 ]] && {
-                git clone --depth=1 https://github.com/XSans02/aarch64-linux-android-4.9 $BASE_DIR/arm64
-        }
-        ARM64=aarch64-linux-android-
-        ARM32=arm-linux-androideabi-
+        [[ ! -d "$BASE_DIR/arm32" ]] && git clone --depth=1 https://github.com/XSans02/arm-linux-androideabi-4.9 "$BASE_DIR"/arm32
+        [[ ! -d "$BASE_DIR/arm64" ]] && git clone --depth=1 https://github.com/XSans02/aarch64-linux-android-4.9 "$BASE_DIR"/arm64
+        ARM64="aarch64-linux-android-"
+        ARM32="arm-linux-androideabi-"
         GCC64_DIR="$BASE_DIR/arm64"
         GCC32_DIR="$BASE_DIR/arm32"
         PREFIXDIR="$CLANG_DIR/bin/"
         export PATH="$CLANG_DIR/bin:$GCC64_DIR/bin:$GCC32_DIR/bin:$PATH"
 } || {
-        ARM64=aarch64-linux-gnu-
-        ARM32=arm-linux-gnueabi-
+        ARM64="aarch64-linux-gnu-"
+        ARM32="arm-linux-gnueabi-"
         export PATH="$CLANG_DIR/bin:$PATH"
 }
 
-AK3_DIR="$BASE_DIR/AnyKernel3"
-[[ ! -d $AK3_DIR ]] && {
-        git clone --depth=1 https://github.com/$KBUILD_BUILD_USER/AnyKernel3 "$BASE_DIR/AnyKernel3"
-}
-
-CODENAME="vayu"
-DEFCONFIG="vayu_defconfig"
 COMPILER="$(${CLANG_DIR}/bin/clang --version | head -n 1 | sed 's/[[:space:]]*$//;s/ ([^()]*)//g')"
 
-export ARCH=arm64
-export SUBARCH=arm64
+AK3_DIR="$BASE_DIR/AnyKernel3"
+[[ ! -d "$AK3_DIR" ]] && git clone --depth=1 https://github.com/$KBUILD_BUILD_USER/AnyKernel3 "$BASE_DIR/AnyKernel3"
 
 send_msg(){
         curl -s -X POST \
@@ -129,6 +117,9 @@ send_msg "
 <b>==================================</b>"
 }
 
+export ARCH="arm64"
+export SUBARCH="arm64"
+
 while true; do
         echo -e ""
         echo -e " Menu                                                               "
@@ -143,11 +134,11 @@ while true; do
         read -r menu
 
         [[ "$menu" == "1" ]] && {
-                make O=out $DEFCONFIG
+                make O=out "$DEFCONFIG"
                 echo -e "(OK) Exported $DEFCONFIG to Out Dir !"
         }
         [[ "$menu" == "2" ]] && {
-                START=$(date +"%s")
+                START="$(date +"%s")"
                 echo -e "(OK) Start Compiling kernel !"
                 send_build_msg
                 [[ "$1" == "sd" ]] || [[ "$1" == "aosp" ]] && {
