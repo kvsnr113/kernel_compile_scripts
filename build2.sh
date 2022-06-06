@@ -143,7 +143,7 @@ while true; do
         echo -e " ║ 4. Upload to Telegram                                           ║"
         echo -e " ║ e. Back Main Menu                                               ║"
         echo -e " ╚═════════════════════════════════════════════════════════════════╝"
-        echo -e " Enter your choice, or press 'e' to exit : "
+        echo -ne " Enter your choice, or press 'e' to exit : "
         read -r menu
 
         [[ "$menu" == "1" ]] && {
