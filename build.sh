@@ -161,7 +161,7 @@ while true; do
                                 CROSS_COMPILE=${ARM64} \
                                 CROSS_COMPILE_ARM32=${ARM32} \
                                 LLVM=1 \
-                                Image.gz 2>&1 | tee out/log.txt
+                                Image.gz dtbo.img dtb.img 2>&1 | tee out/log.txt
                 } || {
                         make -j"$(nproc --all)" O=out \
                                 CC=clang \
@@ -177,7 +177,7 @@ while true; do
                                 CLANG_TRIPLE=aarch64-linux-gnu- \
                                 CROSS_COMPILE=${ARM64} \
                                 CROSS_COMPILE_ARM32=${ARM32} \
-                                Image.gz 2>&1 | tee out/log.txt
+                                Image.gz dtbo.img dtb.img 2>&1 | tee out/log.txt
                 }
                 [[ ! -e "$KERNEL_DIR/out/arch/arm64/boot/Image.gz" ]] && {
                         echo -e "(X) Build error !"
@@ -193,8 +193,8 @@ while true; do
         }
         [[ "$menu" == "3" ]] && {
                 cp "$KERNEL_DIR/out/arch/arm64/boot/Image.gz" "$AK3_DIR"
-                cp "$KERNEL_DIR/out/arch/arm64/boot/dts/qcom/vayu-sm8150-overlay.dtbo" "$AK3_DIR/dtbo.img"
-                cp "$KERNEL_DIR/out/arch/arm64/boot/dts/qcom/sm8150-v2.dtb" "$AK3_DIR/dtb"
+                cp "$KERNEL_DIR/out/arch/arm64/boot/dtbo.img" "$AK3_DIR"
+                cp "$KERNEL_DIR/out/arch/arm64/boot/dtb.img" "$AK3_DIR/dtb"
                 cd "$AK3_DIR"
                 ZIP_NAME=["$(date +"%Y%m%d")"]R.Y.N-"$(date +"%H%M")".zip
                 zip -r9 "$BASE_DIR/$ZIP_NAME" * -x .git README.md *placeholder
