@@ -37,10 +37,7 @@ export KBUILD_BUILD_HOST="projkt113"
 
 CLANG_DIR="$BASE_DIR/"$1"-clang"
 if [[ "$1" == "weebx" ]]; then
-        [[ ! -d "$BASE_DIR/"$1"-clang" ]] && {
-                wget https://github.com/XSans02/WeebX-Clang/raw/main/WeebX-Clang-link.txt -O link.txt && wget $(cat link.txt) -O "WeebX-Clang.tar.gz"
-                mkdir $BASE_DIR/"$1"-clang && tar -xf WeebX-Clang.tar.gz -C $BASE_DIR/"$1"-clang && rm -rf WeebX-Clang.tar.gz link.txt
-        }
+        [[ ! -d "$BASE_DIR/"$1"-clang" ]] && git clone --depth=1 https://gitlab.com/XSans02/weebx-clang $BASE_DIR/"$1"-clang
 elif [[ "$1" == "azure" ]]; then
         [[ ! -d "$BASE_DIR/"$1"-clang" ]] && git clone --depth=1 https://gitlab.com/Panchajanya1999/azure-clang $BASE_DIR/"$1"-clang
 elif [[ "$1" == "sd" ]]; then
