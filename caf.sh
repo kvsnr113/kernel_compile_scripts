@@ -1,19 +1,19 @@
-TAG=LA.UM.9.1.r1-11900-SMxxx0.0                                                                        
+TAG=LA.UM.9.1.r1-11900.01-SMxxx0.QSSI13.0                                                                        
 
 [[ $1 == "upstream" ]] && {                                                                                                                                                               
-git fetch https://git.codelinaro.org/clo/la/platform/vendor/qcom-opensource/wlan/qcacld-3.0 $TAG           
+git fetch qcacld-3.0 $TAG           
 git merge -X subtree=drivers/staging/qcacld-3.0 --signoff FETCH_HEAD                                     
                                                                                                        
-git fetch https://git.codelinaro.org/clo/la/platform/vendor/qcom-opensource/wlan/fw-api $TAG           
+git fetch fw-api $TAG           
 git merge -X subtree=drivers/staging/fw-api --signoff FETCH_HEAD                                                                                                         
 
-git fetch https://git.codelinaro.org/clo/la/platform/vendor/qcom-opensource/wlan/qca-wifi-host-cmn $TAG           
+git fetch qca-wifi-host-cmn $TAG           
 git merge -X subtree=drivers/staging/qca-wifi-host-cmn --signoff FETCH_HEAD                                                                                                         
                                                                         
-git fetch https://git.codelinaro.org/clo/la/platform/vendor/qcom-opensource/data-kernel $TAG                
+git fetch data-kernel $TAG                
 git merge -X subtree=techpack/data --signoff FETCH_HEAD                                                                                                                                          
                                                                                                                                                                                                     
-git fetch https://git.codelinaro.org/clo/la/platform/vendor/opensource/audio-kernel $TAG                  
+git fetch audio-kernel $TAG                  
 git merge -X subtree=techpack/audio --signoff FETCH_HEAD                                         
                                                                                                                                                                                                                                                                                            
 git fetch https://git.codelinaro.org/clo/la/kernel/msm-4.14 $TAG                                        
