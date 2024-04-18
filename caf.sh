@@ -1,6 +1,6 @@
-TAG=LA.UM.9.1.r1-11900.01-SMxxx0.QSSI13.0
+TAG=LA.UM.9.12.1.r1-08100-SMxx50.QSSI12.0
 
-msm-4.14=https://git.codelinaro.org/clo/la/kernel/msm-4.14
+msm-4.19=https://git.codelinaro.org/clo/la/kernel/msm-4.19
 qcacld-3.0=https://git.codelinaro.org/clo/la/platform/vendor/qcom-opensource/wlan/qcacld-3.0
 fw-api=https://git.codelinaro.org/clo/la/platform/vendor/qcom-opensource/wlan/fw-api
 qca-wifi-host-cmn=https://git.codelinaro.org/clo/la/platform/vendor/qcom-opensource/wlan/qca-wifi-host-cmn
@@ -23,7 +23,7 @@ git merge -X subtree=techpack/data --signoff FETCH_HEAD
 git fetch $audio-kernel $TAG                  
 git merge -X subtree=techpack/audio --signoff FETCH_HEAD                                         
                                                                                                                                                                                                                                                                                            
-git fetch $msm-4.14 $TAG                                        
+git fetch $msm-4.19 $TAG                                        
 git merge --signoff FETCH_HEAD                                                                                                                                                                                                                                                                               
 }
 
@@ -53,6 +53,6 @@ git merge -s ours --no-commit --allow-unrelated-histories FETCH_HEAD
 git read-tree --prefix=techpack/audio -u FETCH_HEAD
 git commit --signoff
 
-git fetch $msm-4.14 $TAG                                        
+git fetch $msm-4.19 $TAG                                        
 git merge --signoff FETCH_HEAD 
 }
