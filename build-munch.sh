@@ -12,8 +12,8 @@ cd "$KERNEL_DIR"
 [[ "$@" == *dtbo* ]] && DTBO=1
 
 # Set your Telegram chat id & bot token / export it from .bashrc
-TOKEN=7113229850:AAEyJ6uMeo1-SRvWtoklFaFdDUhxE0fUBD0
-CHATID=-1001931155198
+TOKEN=
+CHATID=
 
 # Set device name
 CODENAME=POCO-F4
