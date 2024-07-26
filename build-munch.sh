@@ -6,19 +6,56 @@ cd ..
 BASE_DIR="$PWD"
 cd "$KERNEL_DIR"
 
-[[ "$@" == *ex* ]] && KERNEL_NAME=EXCEPTION || KERNEL_NAME=NOVA
+export USE_CCACHE=1
+
+[[ "$@" == *stable* ]] && TYPE=STABLE || TYPE=CI
+
+setkernelname(){
+        [[ "$1" == "stable" ]] && sed -i '/CONFIG_LOCALVERSION=/c\CONFIG_LOCALVERSION="-NOVA-[R6]"' out/.config || sed -i '/CONFIG_LOCALVERSION=/c\CONFIG_LOCALVERSION="-NOVA-[CI]"' out/.config
+}
 
 [[ "$@" == *flto* ]] && LTO=FULL || LTO=THIN
 [[ "$@" == *dtbo* ]] && DTBO=1
+
+[[ "$@" == *neutron* ]] && export PATH="$BASE_DIR/neutron-clang/bin:$PATH" && CLANG="Neutron Clang" || export PATH="$BASE_DIR/aosp-clang/bin:$PATH" && CLANG="AOSP Clang"
+
+AK3_DIR="$BASE_DIR/AnyKernel3"
+[[ ! -d "$AK3_DIR" ]] && echo -e "(X) Please Provide AnyKernel3 !" && exit
 
 # Set your Telegram chat id & bot token / export it from .bashrc
 TOKEN=
 CHATID=
 
+[[ "$@" == *munch* ]] && {
+sed -i '/is_apollo/c\is_apollo=1;' $AK3_DIR/anykernel.sh
+TARGET=munch
 # Set device name
-CODENAME=POCO-F4
+CODENAME=POCO-F4 
 # Set defconfig to use
 DEFCONFIG=vendor/munch_defconfig
+# Set front zipname
+KERNEL_NAME=MUNCH
+}
+[[ "$@" == *alioth* ]] && {
+sed -i '/is_apollo/c\is_apollo=0;' $AK3_DIR/anykernel.sh
+TARGET=alioth
+# Set device name
+CODENAME=POCO-F3
+# Set defconfig to use
+DEFCONFIG=vendor/alioth_defconfig
+# Set front zipname
+KERNEL_NAME=ALIOTH
+}
+[[ "$@" == *apollo* ]] && {
+sed -i '/is_apollo/c\is_apollo=1;' $AK3_DIR/anykernel.sh
+TARGET=apollo
+# Set device name
+CODENAME=Mi10T/Pro
+# Set defconfig to use
+DEFCONFIG=vendor/apollo_defconfig
+# Set front zipname
+KERNEL_NAME=APOLLO
+}
 
 # Set kernel image to use
 K_IMG="$KERNEL_DIR/out/arch/arm64/boot/Image"
@@ -28,13 +65,9 @@ K_DTB="$KERNEL_DIR/out/arch/arm64/boot/dtb"
 # Set anything you want
 export ARCH="arm64"
 export SUBARCH="arm64"
-export KBUILD_BUILD_USER=113
+export KBUILD_BUILD_USER=Project113
 export KBUILD_BUILD_HOST=Mikaela
 export TZ=Asia/Jakarta
-export PATH="$BASE_DIR/neutron-clang/bin:$PATH"
-
-AK3_DIR="$BASE_DIR/AnyKernel3"
-[[ ! -d "$AK3_DIR" ]] && echo -e "(X) Please Provide AnyKernel3 !" && exit
 
 build_msg(){
 send_msg "
@@ -46,7 +79,7 @@ send_msg "
 <b>Device : </b><code>$CODENAME</code>
 <b>Branch : </b><code>$(git rev-parse --abbrev-ref HEAD)</code>
 <b>Commit : </b><code>$(git log --pretty=format:'%s' -1)</code>
-<b>Clang  : </b><code>Neutron Clang 19</code>
+<b>Clang  : </b><code>$CLANG</code>
 <b>==================================</b>"
 }
 
@@ -84,10 +117,24 @@ miui_dtbo(){
         [[ "$1" == "APPLY" ]] && {
                 sed -i 's/qcom,mdss-pan-physical-width-dimension = <70>;$/qcom,mdss-pan-physical-width-dimension = <695>;/' arch/arm64/boot/dts/vendor/qcom/dsi-panel-l11r-38-08-0a-dsc-cmd.dtsi
                 sed -i 's/qcom,mdss-pan-physical-height-dimension = <155>;$/qcom,mdss-pan-physical-height-dimension = <1546>;/' arch/arm64/boot/dts/vendor/qcom/dsi-panel-l11r-38-08-0a-dsc-cmd.dtsi
+
+                sed -i 's/qcom,mdss-pan-physical-width-dimension = <70>;$/qcom,mdss-pan-physical-width-dimension = <695>;/' arch/arm64/boot/dts/vendor/qcom/dsi-panel-j3s-37-02-0a-dsc-video.dtsi
+                sed -i 's/qcom,mdss-pan-physical-height-dimension = <155>;$/qcom,mdss-pan-physical-height-dimension = <1546>;/' arch/arm64/boot/dts/vendor/qcom/dsi-panel-j3s-37-02-0a-dsc-video.dtsi
+                
+                sed -i 's/qcom,mdss-pan-physical-width-dimension = <70>;$/qcom,mdss-pan-physical-width-dimension = <695>;/'  arch/arm64/boot/dts/vendor/qcom/dsi-panel-k11a-38-08-0a-dsc-cmd.dtsi
+                sed -i 's/qcom,mdss-pan-physical-height-dimension = <155>;$/qcom,mdss-pan-physical-height-dimension = <1546>;/'  arch/arm64/boot/dts/vendor/qcom/dsi-panel-k11a-38-08-0a-dsc-cmd.dtsi
+
         } 
          [[ "$1" == "REVERT" ]] && {
-                 sed -i 's/qcom,mdss-pan-physical-width-dimension = <695>;$/qcom,mdss-pan-physical-width-dimension = <70>;/' arch/arm64/boot/dts/vendor/qcom/dsi-panel-l11r-38-08-0a-dsc-cmd.dtsi
-                 sed -i 's/qcom,mdss-pan-physical-height-dimension = <1546>;$/qcom,mdss-pan-physical-height-dimension = <155>;/' arch/arm64/boot/dts/vendor/qcom/dsi-panel-l11r-38-08-0a-dsc-cmd.dtsi
+                sed -i 's/qcom,mdss-pan-physical-width-dimension = <695>;$/qcom,mdss-pan-physical-width-dimension = <70>;/' arch/arm64/boot/dts/vendor/qcom/dsi-panel-l11r-38-08-0a-dsc-cmd.dtsi
+                sed -i 's/qcom,mdss-pan-physical-height-dimension = <1546>;$/qcom,mdss-pan-physical-height-dimension = <155>;/' arch/arm64/boot/dts/vendor/qcom/dsi-panel-l11r-38-08-0a-dsc-cmd.dtsi
+
+                sed -i 's/qcom,mdss-pan-physical-width-dimension = <695>;$/qcom,mdss-pan-physical-width-dimension = <70>;/' arch/arm64/boot/dts/vendor/qcom/dsi-panel-j3s-37-02-0a-dsc-video.dtsi
+                sed -i 's/qcom,mdss-pan-physical-height-dimension = <1546>;$/qcom,mdss-pan-physical-height-dimension = <155>;/' arch/arm64/boot/dts/vendor/qcom/dsi-panel-j3s-37-02-0a-dsc-video.dtsi
+
+                sed -i 's/qcom,mdss-pan-physical-width-dimension = <695>;$/qcom,mdss-pan-physical-width-dimension = <70>;/'  arch/arm64/boot/dts/vendor/qcom/dsi-panel-k11a-38-08-0a-dsc-cmd.dtsi
+                sed -i 's/qcom,mdss-pan-physical-height-dimension = <1546>;$/qcom,mdss-pan-physical-height-dimension = <155>;/'  arch/arm64/boot/dts/vendor/qcom/dsi-panel-k11a-38-08-0a-dsc-cmd.dtsi
+
         }
 }
 
@@ -95,8 +142,10 @@ clearbuild(){
         rm -rf "$K_IMG"
         rm -rf "$K_DTB"
         rm -rf "$K_DTBO"
+        rm -rf "out/arch/arm64/boot/dts/vendor/qcom"
 
         rm -rf "$AK3_DIR/Image"
+        rm -rf "$AK3_DIR/Image.gz"
         rm -rf "$AK3_DIR/dtb"
         rm -rf "$AK3_DIR/dtbo.img"
 }
@@ -107,15 +156,15 @@ zipbuild(){
 
         cd "$AK3_DIR"
 
-        [[ "$@" == *AOSP* ]] && cp -af aospdtbo.img dtbo.img
-        [[ "$@" == *MIUI* ]] && cp -af miuidtbo.img dtbo.img
+        [[ "$@" == *AOSP* ]] && cp -af "$TARGET"-aospdtbo.img dtbo.img
+        [[ "$@" == *MIUI* ]] && cp -af "$TARGET"-miuidtbo.img dtbo.img
 
         echo -e "(OK) Zipping "$1" Kernel !"
 
-        [[ "$@" == *AOSP_NOKSU* ]] && AOSP_NOKSU_ZIP_NAME="["$KERNEL_NAME"-AOSP-NOKSU]["$(date "+%Y%m%d-%H%M%S")"]".zip && zip -r9 "$BASE_DIR/$AOSP_NOKSU_ZIP_NAME" * -x .git README.md miuidtbo.img aospdtbo.img
-        [[ "$@" == *AOSP_KSU* ]] && AOSP_KSU_ZIP_NAME="["$KERNEL_NAME"-AOSP-KSU]["$(date "+%Y%m%d-%H%M%S")"]".zip && zip -r9 "$BASE_DIR/$AOSP_KSU_ZIP_NAME" * -x .git README.md miuidtbo.img aospdtbo.img 
-        [[ "$@" == *MIUI_NOKSU* ]] && MIUI_NOKSU_ZIP_NAME="["$KERNEL_NAME"-MIUI-NOKSU]["$(date "+%Y%m%d-%H%M%S")"]".zip && zip -r9 "$BASE_DIR/$MIUI_NOKSU_ZIP_NAME" * -x .git README.md aospdtbo.img miuidtbo.img
-        [[ "$@" == *MIUI_KSU* ]] && MIUI_KSU_ZIP_NAME="["$KERNEL_NAME"-MIUI-KSU]["$(date "+%Y%m%d-%H%M%S")"]".zip && zip -r9 "$BASE_DIR/$MIUI_KSU_ZIP_NAME" * -x .git README.md aospdtbo.img miuidtbo.img
+        [[ "$@" == *AOSP_NOKSU* ]] && AOSP_NOKSU_ZIP_NAME="["$KERNEL_NAME"-AOSP-NOKSU]["$(date "+%Y%m%d-%H%M%S")"]".zip && zip -r9 "$BASE_DIR/$AOSP_NOKSU_ZIP_NAME" * -x .git README.md *aospdtbo.img *miuidtbo.img
+        [[ "$@" == *AOSP_KSU* ]] && AOSP_KSU_ZIP_NAME="["$KERNEL_NAME"-AOSP-KSU]["$(date "+%Y%m%d-%H%M%S")"]".zip && zip -r9 "$BASE_DIR/$AOSP_KSU_ZIP_NAME" * -x .git README.md *aospdtbo.img *miuidtbo.img
+        [[ "$@" == *MIUI_NOKSU* ]] && MIUI_NOKSU_ZIP_NAME="["$KERNEL_NAME"-MIUI-NOKSU]["$(date "+%Y%m%d-%H%M%S")"]".zip && zip -r9 "$BASE_DIR/$MIUI_NOKSU_ZIP_NAME" * -x .git README.md *aospdtbo.img *miuidtbo.img
+        [[ "$@" == *MIUI_KSU* ]] && MIUI_KSU_ZIP_NAME="["$KERNEL_NAME"-MIUI-KSU]["$(date "+%Y%m%d-%H%M%S")"]".zip && zip -r9 "$BASE_DIR/$MIUI_KSU_ZIP_NAME" * -x .git README.md *aospdtbo.img *miuidtbo.img
 
         cd "$KERNEL_DIR"
 }
@@ -152,14 +201,16 @@ compilebuild(){
 makebuild(){
         [[ "$@" == *COMPILE* ]] && {
 
+                [[ "$TYPE" == "STABLE" ]] && setkernelname "stable" || setkernelname
+
                 [[ "$1" == *KSU* ]] && sed -i '/CONFIG_KSU/c\CONFIG_KSU=y' out/.config
                 [[ "$1" == *NOKSU* ]] && sed -i '/CONFIG_KSU/c\CONFIG_KSU=n' out/.config
 
                 compilebuild
 
                 [[ "$DTBO" == 1 ]] && {
-                        [[ "$1" == *MIUI* ]] && rm -rf "$AK3_DIR/miuidtbo.img" && cp "$K_DTBO" "$AK3_DIR/miuidtbo.img"
-                        [[ "$1" == *AOSP* ]] && rm -rf "$AK3_DIR/aospdtbo.img" && cp "$K_DTBO" "$AK3_DIR/aospdtbo.img"
+                        [[ "$1" == *MIUI* ]] && rm -rf "$AK3_DIR/"$TARGET"-miuidtbo.img" && cp "$K_DTBO" "$AK3_DIR/"$TARGET"-miuidtbo.img"
+                        [[ "$1" == *AOSP* ]] && rm -rf "$AK3_DIR/"$TARGET"-aospdtbo.img" && cp "$K_DTBO" "$AK3_DIR/"$TARGET"-aospdtbo.img"
                 }
         }
 
@@ -219,7 +270,7 @@ while true; do
 
                 [[ "$@" == *upload* ]] && uploadbuild
 
-                git restore arch/arm64/boot/dts/vendor/qcom/dsi-panel-l11r-38-08-0a-dsc-cmd.dtsi "arch/arm64/configs/$DEFCONFIG"
+                git restore arch/arm64/boot/dts/vendor/qcom "arch/arm64/configs/$DEFCONFIG"
         ;;
 
         3 )
