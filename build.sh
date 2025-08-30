@@ -13,10 +13,10 @@ case "$@" in
         *stable*) 
         TYPE=STABLE
         ;;
-        *port*) then
+        *port*)
         TYPE=PORT
         ;;
-        *dev*) then
+        *dev*)
         TYPE=DEV
         ;;
         *)
